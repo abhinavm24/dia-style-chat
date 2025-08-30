@@ -34,6 +34,21 @@
         </div>
       </header>
 
+      <!-- In-panel Settings Overlay -->
+      <div id="settingsPanel" class="settings-panel" aria-hidden="true">
+        <div class="settings-header">
+          <div class="settings-title">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </div>
+          <button id="closeSettings" class="settings-close" title="Back to chat">
+            <i class="fas fa-arrow-left"></i>
+            <span class="btn-label">Back</span>
+          </button>
+        </div>
+        <iframe id="settingsFrame" title="Settings"></iframe>
+      </div>
+
       <main id="messages" class="messages-container">
         <div class="welcome-message">
           <div class="welcome-icon">

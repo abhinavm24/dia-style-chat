@@ -5,6 +5,9 @@ const formEl = document.getElementById("composer");
 const includePageEl = document.getElementById("includePage");
 const sendBtn = document.getElementById("send");
 const openOptionsBtn = document.getElementById("openOptions");
+const settingsPanel = document.getElementById("settingsPanel");
+const settingsFrame = document.getElementById("settingsFrame");
+const closeSettingsBtn = document.getElementById("closeSettings");
 const themeToggleBtn = document.getElementById("themeToggle");
 const quickBtns = document.querySelectorAll(".action-btn");
 
@@ -44,7 +47,27 @@ async function initTheme() {
 }
 
 // Enhanced UI interactions
-openOptionsBtn.onclick = () => chrome.runtime.openOptionsPage();
+function openSettingsInPanel() {
+  if (!settingsFrame.getAttribute('src')) {
+    settingsFrame.src = chrome.runtime.getURL('options.html');
+  }
+  settingsPanel.classList.add('open');
+  settingsPanel.setAttribute('aria-hidden', 'false');
+}
+
+function closeSettingsPanel() {
+  settingsPanel.classList.remove('open');
+  settingsPanel.setAttribute('aria-hidden', 'true');
+}
+
+openOptionsBtn.onclick = openSettingsInPanel;
+if (closeSettingsBtn) closeSettingsBtn.onclick = closeSettingsPanel;
+// Close settings when pressing Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && settingsPanel.classList.contains('open')) {
+    closeSettingsPanel();
+  }
+});
 themeToggleBtn.onclick = toggleTheme;
 
 quickBtns.forEach((b) => b.addEventListener("click", async (e) => {

@@ -69,6 +69,7 @@ body {
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, var(--bg) 0%, var(--bg-secondary) 100%);
+  position: relative; /* anchor for settings overlay */
 }
 
 /* Header Styles */
@@ -232,6 +233,87 @@ body {
 
 .settings-btn i {
   font-size: 14px;
+}
+
+/* In-panel Settings Overlay */
+.settings-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-xl);
+  z-index: 1000;
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-panel.open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .settings-header {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.settings-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.settings-title i {
+  color: var(--accent);
+}
+
+.settings-close {
+  height: 32px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+}
+
+.settings-close:hover {
+  border-color: var(--accent);
+  color: var(--fg);
+}
+
+.settings-close .btn-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#settingsPanel iframe#settingsFrame {
+  border: none;
+  width: 100%;
+  flex: 1 1 auto;
 }
 
 /* Quick Actions */

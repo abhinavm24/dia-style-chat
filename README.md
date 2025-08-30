@@ -1,6 +1,6 @@
-# DIA-Style Chat Extension
+# Tab Chat Extension
 
-A beautiful, modern Chrome extension that provides an AI-powered chat interface for web pages, inspired by the elegant design of DIA chat applications.
+A beautiful, modern Chrome extension that provides an AI-powered chat interface for web pages.
 
 ## ✨ Features
 

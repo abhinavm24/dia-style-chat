@@ -4,15 +4,46 @@ const promptEl = document.getElementById("prompt");
 const formEl = document.getElementById("composer");
 const includePageEl = document.getElementById("includePage");
 const openOptionsBtn = document.getElementById("openOptions");
+const themeToggleBtn = document.getElementById("themeToggle");
 const quickBtns = document.querySelectorAll(".action-btn");
 
 let history = []; // {role:'user'|'model', text:string}
 let streamCounter = 0;
 let currentTabId = null;
 let isTyping = false;
+let currentTheme = 'light'; // Default theme
+
+// Theme management
+function setTheme(theme) {
+  currentTheme = theme;
+  document.documentElement.setAttribute('data-theme', theme);
+  
+  // Update theme toggle button icon
+  const icon = themeToggleBtn.querySelector('i');
+  if (theme === 'dark') {
+    icon.className = 'fas fa-sun';
+  } else {
+    icon.className = 'fas fa-moon';
+  }
+  
+  // Save theme preference
+  chrome.storage.sync.set({ theme: theme });
+}
+
+function toggleTheme() {
+  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+  setTheme(newTheme);
+}
+
+// Initialize theme
+async function initTheme() {
+  const { theme } = await chrome.storage.sync.get({ theme: 'light' });
+  setTheme(theme);
+}
 
 // Enhanced UI interactions
 openOptionsBtn.onclick = () => chrome.runtime.openOptionsPage();
+themeToggleBtn.onclick = toggleTheme;
 
 quickBtns.forEach((b) => b.addEventListener("click", () => {
   promptEl.value = b.dataset.template;
@@ -38,10 +69,23 @@ async function getActiveTabId() {
   return tab?.id;
 }
 
+// Enhanced auto-scroll functionality
+function scrollToBottom(smooth = true) {
+  messagesEl.scrollTo({
+    top: messagesEl.scrollHeight,
+    behavior: 'smooth'
+  });
+}
+
+function isNearBottom() {
+  const threshold = 100; // pixels from bottom
+  return messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < threshold;
+}
+
 function addMessage(role, text) {
   const div = document.createElement("div");
   div.className = `msg ${role}`;
-  div.textContent = text;
+  div.innerHTML = formatMessage(text);
   
   // Add entrance animation
   div.style.opacity = '0';
@@ -56,13 +100,18 @@ function addMessage(role, text) {
     div.style.transform = 'translateY(0)';
   }, 50);
   
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  // Auto-scroll to bottom
+  scrollToBottom();
   return div;
 }
 
 function updateMessage(el, more) {
-  el.textContent += more;
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  el.innerHTML += formatMessage(more, true);
+  
+  // Only auto-scroll if user is near bottom
+  if (isNearBottom()) {
+    scrollToBottom(false);
+  }
 }
 
 function showTypingIndicator() {
@@ -80,7 +129,7 @@ function showTypingIndicator() {
   `;
   
   messagesEl.appendChild(typingEl);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  scrollToBottom();
   return typingEl;
 }
 
@@ -104,7 +153,6 @@ async function askGemini(question, opts = {}) {
   history.push({ role: "user", text: question });
 
   const streamId = `s${Date.now()}_${streamCounter++}`;
-  const assistantEl = addMessage("assistant", "");
   
   // Show typing indicator
   const typingEl = showTypingIndicator();
@@ -112,10 +160,19 @@ async function askGemini(question, opts = {}) {
   const tabId = currentTabId || (await getActiveTabId());
   const includePage = includePageEl.checked;
 
+  let assistantEl;
+  let buffer = "";
+  let streamed = false;
+
   // listen for streaming deltas
   const onStream = (msg, sender, sendResponse) => {
     if (msg?.type === "STREAM_DELTA" && msg.streamId === streamId) {
-      hideTypingIndicator(typingEl);
+      if (!streamed) {
+        streamed = true;
+        hideTypingIndicator(typingEl);
+        assistantEl = addMessage("assistant", "");
+      }
+      buffer += msg.delta;
       updateMessage(assistantEl, msg.delta);
     }
   };
@@ -133,20 +190,29 @@ async function askGemini(question, opts = {}) {
     });
 
     chrome.runtime.onMessage.removeListener(onStream);
-    hideTypingIndicator(typingEl);
+    
+    if (!streamed) {
+      hideTypingIndicator(typingEl);
+      assistantEl = addMessage("assistant", "");
+    }
 
     if (res?.error) {
       updateMessage(assistantEl, `⚠️ ${res.error}`);
       return;
     }
-    if (!res.streamed) {
+    if (!streamed) {
       updateMessage(assistantEl, res.text || "");
+      buffer = res.text || "";
     }
-    history.push({ role: "model", text: assistantEl.textContent });
+    history.push({ role: "model", text: buffer });
   } catch (e) {
     chrome.runtime.onMessage.removeListener(onStream);
-    hideTypingIndicator(typingEl);
-    updateMessage(assistantEl, `⚠️ ${e.message || e}`);
+    if (!streamed) {
+      hideTypingIndicator(typingEl);
+      addMessage("assistant", `⚠️ ${e.message || e}`);
+    } else {
+      updateMessage(assistantEl, `⚠️ ${e.message || e}`);
+    }
   } finally {
     promptEl.value = "";
   }
@@ -161,7 +227,7 @@ formEl.addEventListener("submit", async (e) => {
 // Add input focus effects
 promptEl.addEventListener('focus', () => {
   promptEl.parentElement.style.borderColor = 'var(--accent)';
-  promptEl.parentElement.style.boxShadow = '0 0 0 3px rgba(79, 70, 229, 0.1)';
+  promptEl.parentElement.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
 });
 
 promptEl.addEventListener('blur', () => {
@@ -179,6 +245,9 @@ promptEl.addEventListener('keydown', (e) => {
 
 // Enhanced initialization
 (async function init() {
+  // Initialize theme first
+  await initTheme();
+  
   currentTabId = await getActiveTabId();
   
   // Remove the default welcome message since we have a better one in HTML
@@ -226,20 +295,20 @@ promptEl.addEventListener('keydown', (e) => {
   }, 500);
 })();
 
-// Add smooth scrolling for better UX
-function smoothScrollToBottom() {
-  messagesEl.scrollTo({
-    top: messagesEl.scrollHeight,
-    behavior: 'smooth'
-  });
-}
-
 // Enhanced message display with markdown-like formatting
-function formatMessage(text) {
+function formatMessage(text, isDelta = false) {
   // Simple formatting for better readability
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`(.*?)`/g, '<code>$1</code>')
-    .replace(/\n/g, '<br>');
+  let formatted = text;
+  if (!isDelta) {
+    // Full message formatting
+    formatted = formatted
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`(.*?)`/g, '<code>$1</code>')
+      .replace(/\n/g, '<br>');
+  } else {
+    // For deltas, just handle newlines
+    formatted = formatted.replace(/\n/g, '<br>');
+  }
+  return formatted;
 }

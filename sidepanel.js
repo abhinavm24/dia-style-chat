@@ -45,8 +45,40 @@ async function initTheme() {
 openOptionsBtn.onclick = () => chrome.runtime.openOptionsPage();
 themeToggleBtn.onclick = toggleTheme;
 
-quickBtns.forEach((b) => b.addEventListener("click", () => {
-  promptEl.value = b.dataset.template;
+quickBtns.forEach((b) => b.addEventListener("click", async (e) => {
+  e.preventDefault();
+  let tmpl = b.dataset.template || '';
+
+  // Try to fetch current selection from the active tab
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id) {
+      const snap = await chrome.tabs.sendMessage(tab.id, { type: 'EXTRACT_PAGE' });
+      const sel = (snap?.selection || '').trim();
+      if (sel) {
+        // Normalize common phrasing to use selection
+        const patterns = [/selected text/i, /this page/i, /the page/i, /this article/i, /this content/i];
+        let matched = false;
+        for (const re of patterns) {
+          if (re.test(tmpl)) {
+            tmpl = tmpl.replace(re, 'the following text');
+            matched = true;
+            break;
+          }
+        }
+        // Attach the selected text
+        if (matched) {
+          tmpl = `${tmpl}\n\n${sel}`;
+        } else {
+          tmpl = `${tmpl}\n\nUse only the following text:\n\n${sel}`;
+        }
+      }
+    }
+  } catch (_) {
+    // ignore if we can't read selection; fall back to template only
+  }
+
+  promptEl.value = tmpl;
   promptEl.focus();
   // Add subtle animation feedback
   b.style.transform = 'scale(0.95)';

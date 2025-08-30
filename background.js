@@ -142,17 +142,21 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         return;
       }
 
-      // Build context from page snapshot unless user opted out
+      // Build context: always include selection if present; include full page only if opted in
       let ctx = "";
       try {
+        const snap = await getPageSnapshot(msg.tabId);
+
         if (msg.includePage) {
-          const snap = await getPageSnapshot(msg.tabId);
           const metaBlock =
             `TITLE: ${snap.title}\nURL: ${snap.url}\n` +
             (snap.meta ? `META: ${snap.meta}\n` : "") +
             (snap.selection ? `SELECTION: ${snap.selection}\n` : "");
           const chunks = chunkText(snap.text || "");
           ctx = metaBlock + (chunks[0] || "");
+        } else if (snap.selection) {
+          // When page context is disabled, still pass selected text so quick actions work
+          ctx = `SELECTION: ${snap.selection}`;
         }
       } catch (e) {
         console.warn("Context extraction failed:", e);

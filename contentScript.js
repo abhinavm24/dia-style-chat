@@ -14,6 +14,26 @@ function extractPrimaryText() {
   return text;
 }
 
+function getSelectedText() {
+  try {
+    // Handle selections inside input/textarea
+    const ae = document.activeElement;
+    if (ae && (ae.tagName === 'TEXTAREA' || (ae.tagName === 'INPUT' && /^(text|search|url|tel|password|email|number)$/i.test(ae.type)))) {
+      const start = ae.selectionStart ?? 0;
+      const end = ae.selectionEnd ?? 0;
+      if (typeof start === 'number' && typeof end === 'number' && end > start) {
+        return String(ae.value).slice(start, end).trim();
+      }
+    }
+    // Default DOM selection (works for contentEditable and page text)
+    const sel = window.getSelection?.();
+    const s = sel && typeof sel.toString === 'function' ? sel.toString() : '';
+    return (s || '').trim();
+  } catch {
+    return '';
+  }
+}
+
 function getMetaDescription() {
   const el = document.querySelector('meta[name="description"], meta[property="og:description"]');
   return el?.getAttribute("content") || "";
@@ -22,7 +42,7 @@ function getMetaDescription() {
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === "EXTRACT_PAGE") {
     try {
-      const selection = window.getSelection?.().toString().trim() || "";
+      const selection = getSelectedText();
       const text = extractPrimaryText();
       sendResponse({
         title: document.title || "",

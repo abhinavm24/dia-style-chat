@@ -5,32 +5,75 @@
     <title>Dia-Style Chat</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="sidepanel.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   </head>
   <body>
     <div id="app">
-      <header>
-        <div class="brand">Dia-Style Chat</div>
-        <div class="spacer"></div>
-        <button id="openOptions" title="Settings">⚙️</button>
+      <header class="app-header">
+        <div class="header-content">
+          <div class="brand-section">
+            <div class="brand-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9.5 2C7.01 2 5 4.01 5 6.5c0 1.54.8 2.9 2 3.68V10c0 1.1.9 2 2 2h1v1c0 1.1.9 2 2 2h1v1c0 1.1.9 2 2 2h1c1.1 0 2-.9 2-2v-1h1c1.1 0 2-.9 2-2v-1h1c1.1 0 2-.9 2-2V9.68c1.2-.78 2-2.14 2-3.68C23 4.01 20.99 2 18.5 2c-1.54 0-2.9.8-3.68 2H13.18C12.4 2.8 11.04 2 9.5 2zM9.5 4c.83 0 1.5.67 1.5 1.5S10.33 7 9.5 7 8 6.33 8 5.5 8.67 4 9.5 4zm9 0c.83 0 1.5.67 1.5 1.5S19.33 7 18.5 7 17 6.33 17 5.5 17.67 4 18.5 4z" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="brand-text">
+              <h1>DIA Chat</h1>
+              <p class="brand-subtitle">AI Assistant</p>
+            </div>
+          </div>
+          <button id="openOptions" class="settings-btn" title="Settings">
+            <i class="fas fa-cog"></i>
+          </button>
+        </div>
       </header>
 
       <div class="quick-actions">
-        <button data-template="Summarize this page.">Summarize</button>
-        <button data-template="Explain the selected text step by step.">Explain</button>
-        <button data-template="Translate the selected text to English.">Translate</button>
-        <button data-template="List pros and cons from this page.">Pros/Cons</button>
+        <button class="action-btn" data-template="Summarize this page.">
+          <i class="fas fa-compress-alt"></i>
+          <span>Summarize</span>
+        </button>
+        <button class="action-btn" data-template="Explain the selected text step by step.">
+          <i class="fas fa-lightbulb"></i>
+          <span>Explain</span>
+        </button>
+        <button class="action-btn" data-template="Translate the selected text to English.">
+          <i class="fas fa-language"></i>
+          <span>Translate</span>
+        </button>
+        <button class="action-btn" data-template="List pros and cons from this page.">
+          <i class="fas fa-balance-scale"></i>
+          <span>Pros/Cons</span>
+        </button>
       </div>
 
-      <label class="ctx">
-        <input type="checkbox" id="includePage" checked />
-        Include page content
-      </label>
+      <div class="context-toggle">
+        <label class="ctx">
+          <input type="checkbox" id="includePage" checked />
+          <span class="checkmark"></span>
+          <span class="label-text">Include page content</span>
+        </label>
+      </div>
 
-      <main id="messages"></main>
+      <main id="messages" class="messages-container">
+        <div class="welcome-message">
+          <div class="welcome-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9.5 2C7.01 2 5 4.01 5 6.5c0 1.54.8 2.9 2 3.68V10c0 1.1.9 2 2 2h1v1c0 1.1.9 2 2 2h1v1c0 1.1.9 2 2 2h1c1.1 0 2-.9 2-2v-1h1c1.1 0 2-.9 2-2v-1h1c1.1 0 2-.9 2-2V9.68c1.2-.78 2-2.14 2-3.68C23 4.01 20.99 2 18.5 2c-1.54 0-2.9.8-3.68 2H13.18C12.4 2.8 11.04 2 9.5 2zM9.5 4c.83 0 1.5.67 1.5 1.5S10.33 7 9.5 7 8 6.33 8 5.5 8.67 4 9.5 4zm9 0c.83 0 1.5.67 1.5 1.5S19.33 7 18.5 7 17 6.33 17 5.5 17.67 4 18.5 4z" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3>Welcome to DIA Chat!</h3>
+          <p>I'm here to help you understand and interact with web content. Ask me anything!</p>
+        </div>
+      </main>
 
-      <form id="composer">
-        <input id="prompt" type="text" placeholder="Ask about this page…" autocomplete="off" />
-        <button id="send" type="submit">Send</button>
+      <form id="composer" class="composer">
+        <div class="input-wrapper">
+          <input id="prompt" type="text" placeholder="Ask about this page…" autocomplete="off" />
+          <button id="send" type="submit">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
       </form>
     </div>
     <script src="sidepanel.js" defer></script>

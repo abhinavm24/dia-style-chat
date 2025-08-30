@@ -368,6 +368,9 @@ body {
   border-radius: 999px;
   padding: 6px 10px;
   box-shadow: var(--shadow-sm);
+  /* Keep the toggle compact and single-line */
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .ctx-inline:hover {
@@ -406,6 +409,8 @@ body {
 
 .label-text {
   color: var(--muted-light);
+  /* Prevent wrapping that breaks layout */
+  white-space: nowrap;
 }
 
 /* Compact the label in tight spaces */

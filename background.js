@@ -1,6 +1,6 @@
 // background.js (MV3 service worker)
 
-const DEFAULT_MODEL = "gemini-1.5-flash-latest"; // Works widely; change in options if desired.
+const DEFAULT_MODEL = "gemini-2.5-flash-lite"; // Slim for lower latency, change in options if desired.
 
 chrome.action.onClicked.addListener(async (tab) => {
   try {

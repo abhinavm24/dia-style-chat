@@ -7,7 +7,7 @@ const saveBtn = document.getElementById("save");
 async function load() {
   const { geminiApiKey, geminiModel, enableStreaming } = await chrome.storage.sync.get({
     geminiApiKey: "",
-    geminiModel: "gemini-1.5-flash-latest",
+    geminiModel: "gemini-2.5-flash-lite",
     enableStreaming: true
   });
   apiKeyEl.value = geminiApiKey;

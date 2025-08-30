@@ -36,7 +36,7 @@ A beautiful, modern Chrome extension that provides an AI-powered chat interface 
 ## 🚀 Quick Actions
 
 The extension includes four quick action buttons:
-1. **Summarize** - Get a concise summary of the current page
+1. **Summary** - Get a concise summary of the current page
 2. **Explain** - Step-by-step explanation of selected text
 3. **Translate** - Translate selected text to English
 4. **Pros/Cons** - List advantages and disadvantages from the page

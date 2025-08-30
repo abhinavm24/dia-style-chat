@@ -47,9 +47,15 @@
 
       <form id="composer" class="composer">
         <div class="quick-actions">
+          <label class="ctx ctx-inline" title="Page Context">
+            <input type="checkbox" id="includePage" checked />
+            <span class="checkmark"></span>
+            <span class="label-text">page context</span>
+          </label>
+          <div class="qa-buttons">
           <button class="action-btn" data-template="Summarize this page.">
             <i class="fas fa-compress-alt"></i>
-            <span>Summarize</span>
+            <span>Summary</span>
           </button>
           <button class="action-btn" data-template="Explain the selected text step by step.">
             <i class="fas fa-lightbulb"></i>
@@ -63,14 +69,7 @@
             <i class="fas fa-balance-scale"></i>
             <span>Pros/Cons</span>
           </button>
-        </div>
-
-        <div class="context-toggle">
-          <label class="ctx">
-            <input type="checkbox" id="includePage" checked />
-            <span class="checkmark"></span>
-            <span class="label-text">Include page content</span>
-          </label>
+          </div>
         </div>
 
         <div class="input-wrapper">

@@ -237,8 +237,9 @@ body {
 /* Quick Actions */
 .quick-actions {
   display: flex;
-  justify-content: space-around;
-  gap: 5px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
   padding: 0;
   background: transparent;
   border-bottom: none;
@@ -250,21 +251,49 @@ body {
   background: rgba(255, 255, 255, 0.02);
 }
 
+.qa-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
 .action-btn {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 6px 10px;
+  padding: 6px 4px;
   color: var(--fg-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
+  flex: 0 0 auto;
   gap: 6px;
   transition: all 0.2s ease;
   font-size: 12px;
   font-weight: 500;
   position: relative;
   overflow: hidden;
+}
+
+/* Optional: thinner scrollbar for horizontal quick-actions */
+.qa-buttons::-webkit-scrollbar {
+  height: 6px;
+}
+.qa-buttons::-webkit-scrollbar-track {
+  background: transparent;
+}
+.qa-buttons::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.qa-buttons::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
 }
 
 .action-btn::before {
@@ -330,6 +359,21 @@ body {
   font-weight: 500;
 }
 
+/* Inline variant when placed in quick actions */
+.ctx-inline {
+  margin-left: 0;
+  margin-right: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 10px;
+  box-shadow: var(--shadow-sm);
+}
+
+.ctx-inline:hover {
+  border-color: var(--accent);
+}
+
 .ctx input[type="checkbox"] {
   display: none;
 }
@@ -364,10 +408,17 @@ body {
   color: var(--muted-light);
 }
 
+/* Compact the label in tight spaces */
+@media (max-width: 420px) {
+  .quick-actions .label-text {
+    display: none;
+  }
+}
+
 /* Messages Container */
 .messages-container {
   flex: 1;
-  padding: 20px;
+  padding: 10px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -582,7 +633,7 @@ body {
 
 /* Composer */
 .composer {
-  padding: 16px 20px;
+  padding: 4px 4px;
   background: rgba(0, 0, 0, 0.01);
   border-top: 1px solid var(--border);
   backdrop-filter: blur(20px);
@@ -696,7 +747,7 @@ body {
 /* Responsive Design */
 @media (max-width: 400px) {
   .welcome-message {
-    padding: 24px 16px;
+    padding: 2px 2px;
     margin: 0 16px;
   }
   
@@ -736,4 +787,25 @@ body {
 ::-moz-selection {
   background: var(--accent);
   color: white;
+}
+
+/* Hidden Scrollbars (keep scroll functionality) */
+.messages-container {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;    /* Firefox */
+}
+.messages-container::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important; /* WebKit */
+}
+
+.qa-buttons {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;    /* Firefox */
+}
+.qa-buttons::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important; /* WebKit */
 }

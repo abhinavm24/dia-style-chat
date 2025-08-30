@@ -62,7 +62,7 @@ After generating, reload the extension to see updated icons.
 ## 🎨 Design Highlights
 
 ### Visual Design
-- **Light + Dark Themes**: Crisp light default with rich dark variant
+- **Themes: Light, Dark, System**: Defaults to System (auto). Respects OS `prefers-color-scheme` and updates live.
 - **Gradients**: Beautiful gradient backgrounds and buttons
 - **Glassmorphism**: Subtle backdrop blur effects
 - **Shadows**: Layered shadow system for depth
@@ -107,6 +107,7 @@ The extension includes five quick action buttons:
 ## 🎯 User Experience
 
 - **Welcome Message**: Friendly onboarding experience
+- **Theme Toggle**: Header toggle cycles Light → Dark → System; System mirrors OS and switches automatically when your OS theme changes.
 - **Context Toggle**: Easy control over page content inclusion (label always visible)
 - **Settings Access**: Quick access to extension settings
 - **Clean Scrolling**: Hidden scrollbars; smooth trackpad/touch scrolling
@@ -126,10 +127,11 @@ The extension uses CSS custom properties for easy theming:
 - Modify colors in the `:root` section of `sidepanel.css`
 - Adjust animations by changing transition durations
 - Customize gradients and shadows as needed
+- Theme preference is stored in `chrome.storage.sync` as `theme` with values `light`, `dark`, or `system` (default).
 
 ## 🌟 Future Enhancements
 
-- [ ] Light theme option
+- [ ] Theme selector UI in Settings (optional; toggle already cycles modes)
 - [ ] Custom color schemes
 - [ ] Additional quick actions
 - [ ] Conversation export
@@ -137,6 +139,11 @@ The extension uses CSS custom properties for easy theming:
 - [ ] Multi-language support
 
 ## 📝 Changelog
+
+2025-08-31 — System theme and toggle cycle
+
+- Added System theme that follows OS preference via `prefers-color-scheme`.
+- Theme toggle cycles Light → Dark → System with contextual icons.
 
 2025-08-30 — UI consistency and cleanup
 

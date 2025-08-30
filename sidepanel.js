@@ -21,17 +21,49 @@ let streamCounter = 0;
 let currentTabId = null;
 let isTyping = false;
 let isSending = false;
-let currentTheme = 'light'; // Default theme
+let currentTheme = 'system'; // Default to system to respect OS
+let prefersDarkMedia = window.matchMedia('(prefers-color-scheme: dark)');
+let systemThemeListener = null;
 
 // Theme management
 function setTheme(theme) {
   currentTheme = theme;
-  document.documentElement.setAttribute('data-theme', theme);
-  
+  // If System: mirror OS preference and react to changes
+  if (theme === 'system') {
+    // Apply current system theme
+    const isDark = !!prefersDarkMedia.matches;
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    // Attach change listener once
+    if (!systemThemeListener) {
+      systemThemeListener = (e) => {
+        if (currentTheme === 'system') {
+          document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+        }
+      };
+      if (prefersDarkMedia.addEventListener) {
+        prefersDarkMedia.addEventListener('change', systemThemeListener);
+      } else if (prefersDarkMedia.addListener) {
+        // Safari fallback
+        prefersDarkMedia.addListener(systemThemeListener);
+      }
+    }
+  } else {
+    // Non-system: remove listener if present and set explicit theme
+    if (systemThemeListener) {
+      if (prefersDarkMedia.removeEventListener) {
+        prefersDarkMedia.removeEventListener('change', systemThemeListener);
+      } else if (prefersDarkMedia.removeListener) {
+        prefersDarkMedia.removeListener(systemThemeListener);
+      }
+      systemThemeListener = null;
+    }
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+
   // Update theme toggle button icon
   const icon = themeToggleBtn.querySelector('.icon');
   if (icon) {
-    icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    icon.textContent = theme === 'dark' ? '☀️' : theme === 'light' ? '🌙' : '🌓';
   }
   
   // Save theme preference
@@ -39,13 +71,15 @@ function setTheme(theme) {
 }
 
 function toggleTheme() {
-  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-  setTheme(newTheme);
+  const order = ['light', 'dark', 'system'];
+  const idx = order.indexOf(currentTheme);
+  const next = order[(idx + 1 + order.length) % order.length] || 'system';
+  setTheme(next);
 }
 
 // Initialize theme
 async function initTheme() {
-  const { theme } = await chrome.storage.sync.get({ theme: 'light' });
+  const { theme } = await chrome.storage.sync.get({ theme: 'system' });
   setTheme(theme);
 }
 

@@ -1,5 +1,6 @@
 import { mkdir } from "fs/promises";
-import { join, basename } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import { execFile } from "child_process";
 
 function run(cmd, args, opts = {}) {
@@ -29,13 +30,18 @@ async function zipDir(dir, outFile) {
 }
 
 async function main() {
-  const pkg = (await import(join(process.cwd(), "../package.json"), { assert: { type: "json" } })).default;
+  // Resolve repository root reliably relative to this script file
+  const __filename = fileURLToPath(import.meta.url);
+  const SCRIPTS_DIR = dirname(__filename);
+  const ROOT = join(SCRIPTS_DIR, "..");
+
+  const pkg = (await import(join(ROOT, "package.json"), { assert: { type: "json" } })).default;
   const version = pkg.version;
-  const outDir = join(process.cwd(), "release");
+  const outDir = join(ROOT, "release");
   await mkdir(outDir, { recursive: true });
 
-  const chromeDir = join(process.cwd(), "dist", "chrome");
-  const firefoxDir = join(process.cwd(), "dist", "firefox");
+  const chromeDir = join(ROOT, "dist", "chrome");
+  const firefoxDir = join(ROOT, "dist", "firefox");
 
   const chromeZip = join(outDir, `TabChat-${version}-chrome.zip`);
   const firefoxZip = join(outDir, `TabChat-${version}-firefox.zip`);

@@ -33,33 +33,6 @@
         </div>
       </header>
 
-      <div class="quick-actions">
-        <button class="action-btn" data-template="Summarize this page.">
-          <i class="fas fa-compress-alt"></i>
-          <span>Summarize</span>
-        </button>
-        <button class="action-btn" data-template="Explain the selected text step by step.">
-          <i class="fas fa-lightbulb"></i>
-          <span>Explain</span>
-        </button>
-        <button class="action-btn" data-template="Translate the selected text to English.">
-          <i class="fas fa-language"></i>
-          <span>Translate</span>
-        </button>
-        <button class="action-btn" data-template="List pros and cons from this page.">
-          <i class="fas fa-balance-scale"></i>
-          <span>Pros/Cons</span>
-        </button>
-      </div>
-
-      <div class="context-toggle">
-        <label class="ctx">
-          <input type="checkbox" id="includePage" checked />
-          <span class="checkmark"></span>
-          <span class="label-text">Include page content</span>
-        </label>
-      </div>
-
       <main id="messages" class="messages-container">
         <div class="welcome-message">
           <div class="welcome-icon">
@@ -73,6 +46,33 @@
       </main>
 
       <form id="composer" class="composer">
+        <div class="quick-actions">
+          <button class="action-btn" data-template="Summarize this page.">
+            <i class="fas fa-compress-alt"></i>
+            <span>Summarize</span>
+          </button>
+          <button class="action-btn" data-template="Explain the selected text step by step.">
+            <i class="fas fa-lightbulb"></i>
+            <span>Explain</span>
+          </button>
+          <button class="action-btn" data-template="Translate the selected text to English.">
+            <i class="fas fa-language"></i>
+            <span>Translate</span>
+          </button>
+          <button class="action-btn" data-template="List pros and cons from this page.">
+            <i class="fas fa-balance-scale"></i>
+            <span>Pros/Cons</span>
+          </button>
+        </div>
+
+        <div class="context-toggle">
+          <label class="ctx">
+            <input type="checkbox" id="includePage" checked />
+            <span class="checkmark"></span>
+            <span class="label-text">Include page content</span>
+          </label>
+        </div>
+
         <div class="input-wrapper">
           <input id="prompt" type="text" placeholder="Ask about this page…" autocomplete="off" />
           <button id="send" type="submit">

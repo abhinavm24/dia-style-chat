@@ -16,7 +16,7 @@ async function readSettings() {
   const { geminiApiKey, geminiModel, enableStreaming } = await chrome.storage.sync.get({
     geminiApiKey: "",
     geminiModel: DEFAULT_MODEL,
-    enableStreaming: true
+    enableStreaming: false
   });
   return { geminiApiKey, geminiModel, enableStreaming };
 }

@@ -362,8 +362,8 @@ body {
 .action-btn {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 6px 4px;
+  border-radius: 999px; /* pill to match roundish controls */
+  padding: 4px 6px; /* reduced height */
   color: var(--fg-secondary);
   cursor: pointer;
   display: flex;
@@ -415,12 +415,13 @@ body {
   background: var(--card-hover);
   border-color: var(--accent);
   color: var(--fg);
-  transform: translateY(-2px);
+  /* Keep within container bounds: remove upward shift */
+  transform: none;
   box-shadow: var(--shadow-lg);
 }
 
 .action-btn .icon {
-  font-size: 12px;
+  font-size: 11px; /* smaller icon to match reduced height */
   color: var(--accent);
 }
 
@@ -462,7 +463,7 @@ body {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 6px 10px;
+  padding: 4px 8px; /* reduced height */
   box-shadow: var(--shadow-sm);
   /* Keep the toggle compact and single-line */
   flex: 0 0 auto;
@@ -478,11 +479,11 @@ body {
 }
 
 .checkmark {
-  width: 12px;
-  height: 12px;
+  width: 10px;  /* reduced size */
+  height: 10px; /* reduced size */
   background: var(--card);
   border: 2px solid var(--border);
-  border-radius: 5px;
+  border-radius: 50%; /* round to match pill buttons */
   position: relative;
   transition: all 0.2s ease;
 }
@@ -507,14 +508,11 @@ body {
   color: var(--muted-light);
   /* Prevent wrapping that breaks layout */
   white-space: nowrap;
+  font-size: 11px; /* slightly smaller label */
 }
 
-/* Compact the label in tight spaces */
-@media (max-width: 420px) {
-  .quick-actions .label-text {
-    display: none;
-  }
-}
+/* Keep label visible on all screen sizes */
+/* Previously hidden under 420px; removed to ensure visibility */
 
 /* Messages Container */
 .messages-container {

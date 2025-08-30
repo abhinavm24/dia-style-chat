@@ -25,7 +25,7 @@ async function load() {
   const { geminiApiKey, geminiModel, enableStreaming } = await chrome.storage.sync.get({
     geminiApiKey: "",
     geminiModel: "gemini-2.5-flash-lite",
-    enableStreaming: true
+    enableStreaming: false
   });
   apiKeyEl.value = geminiApiKey;
   modelEl.value = geminiModel;

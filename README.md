@@ -6,67 +6,63 @@ A beautiful, modern Chrome extension that provides an AI-powered chat interface 
 
 - **Beautiful Modern UI**: Clean, gradient-based design with smooth animations
 - **Brain Icon Branding**: Custom brain SVG icon representing AI intelligence
+- **Unified Rounded Controls**: Pill-shaped buttons and circular checkbox
+- **Always-Visible Page Context**: Label never hides on small screens
+- **Quick Action Buttons**: Pre-defined templates for common tasks
+- **Real-time Chat**: Stream responses from Gemini AI
+- **Page Context**: Option to include page content in conversations
+- **Responsive Design**: Works well across screen sizes
+- **Smooth Animations**: Polished hover, focus, and micro-interactions
 
 ## Icon Assets
 
 The extension uses a unified brain icon across the UI and manifest.
 
 - Source SVG: `icons/brain.svg` (uses brand gradient to match CSS `--gradient-accent`).
-- Generated PNGs: `icons/brain-16.png`, `-32`, `-48`, `-64`, `-128`, `-256`.
+- Generated PNGs: `icons/icon-16.png`, `-32`, `-48`, `-64`, `-128`, `-256`.
 - Manifest is configured to use these PNGs for extension and toolbar icons.
 
-To regenerate crisp PNGs from the SVG, run one of the following (depending on what you have installed):
+To regenerate crisp PNGs from the SVG, use any of the following:
 
-Using the helper script (auto-detects tools):
-
-```sh
-./scripts/render-icons.sh
-```
-
-Manually with rsvg-convert (librsvg):
+With rsvg-convert (librsvg):
 
 ```sh
-rsvg-convert -w 16 -h 16 icons/brain.svg -o icons/brain-16.png
-rsvg-convert -w 32 -h 32 icons/brain.svg -o icons/brain-32.png
-rsvg-convert -w 48 -h 48 icons/brain.svg -o icons/brain-48.png
-rsvg-convert -w 64 -h 64 icons/brain.svg -o icons/brain-64.png
-rsvg-convert -w 128 -h 128 icons/brain.svg -o icons/brain-128.png
-rsvg-convert -w 256 -h 256 icons/brain.svg -o icons/brain-256.png
+rsvg-convert -w 16 -h 16 icons/brain.svg -o icons/icon-16.png
+rsvg-convert -w 32 -h 32 icons/brain.svg -o icons/icon-32.png
+rsvg-convert -w 48 -h 48 icons/brain.svg -o icons/icon-48.png
+rsvg-convert -w 64 -h 64 icons/brain.svg -o icons/icon-64.png
+rsvg-convert -w 128 -h 128 icons/brain.svg -o icons/icon-128.png
+rsvg-convert -w 256 -h 256 icons/brain.svg -o icons/icon-256.png
 ```
 
 With Inkscape:
 
 ```sh
-inkscape icons/brain.svg -w 16 -h 16 -o icons/brain-16.png
-inkscape icons/brain.svg -w 32 -h 32 -o icons/brain-32.png
-inkscape icons/brain.svg -w 48 -h 48 -o icons/brain-48.png
-inkscape icons/brain.svg -w 64 -h 64 -o icons/brain-64.png
-inkscape icons/brain.svg -w 128 -h 128 -o icons/brain-128.png
-inkscape icons/brain.svg -w 256 -h 256 -o icons/brain-256.png
+inkscape icons/brain.svg -w 16 -h 16 -o icons/icon-16.png
+inkscape icons/brain.svg -w 32 -h 32 -o icons/icon-32.png
+inkscape icons/brain.svg -w 48 -h 48 -o icons/icon-48.png
+inkscape icons/brain.svg -w 64 -h 64 -o icons/icon-64.png
+inkscape icons/brain.svg -w 128 -h 128 -o icons/icon-128.png
+inkscape icons/brain.svg -w 256 -h 256 -o icons/icon-256.png
 ```
 
 On macOS (Preview/sips):
 
 ```sh
-sips -s format png icons/brain.svg --resampleWidth 16 --out icons/brain-16.png
-sips -s format png icons/brain.svg --resampleWidth 32 --out icons/brain-32.png
-sips -s format png icons/brain.svg --resampleWidth 48 --out icons/brain-48.png
-sips -s format png icons/brain.svg --resampleWidth 64 --out icons/brain-64.png
-sips -s format png icons/brain.svg --resampleWidth 128 --out icons/brain-128.png
-sips -s format png icons/brain.svg --resampleWidth 256 --out icons/brain-256.png
+sips -s format png icons/brain.svg --resampleWidth 16 --out icons/icon-16.png
+sips -s format png icons/brain.svg --resampleWidth 32 --out icons/icon-32.png
+sips -s format png icons/brain.svg --resampleWidth 48 --out icons/icon-48.png
+sips -s format png icons/brain.svg --resampleWidth 64 --out icons/icon-64.png
+sips -s format png icons/brain.svg --resampleWidth 128 --out icons/icon-128.png
+sips -s format png icons/brain.svg --resampleWidth 256 --out icons/icon-256.png
 ```
 
 After generating, reload the extension to see updated icons.
-- **Quick Action Buttons**: Pre-defined templates for common tasks
-- **Real-time Chat**: Stream responses from Gemini AI
-- **Page Context**: Option to include page content in conversations
-- **Responsive Design**: Works perfectly on different screen sizes
-- **Smooth Animations**: Hover effects, transitions, and micro-interactions
 
 ## 🎨 Design Highlights
 
 ### Visual Design
-- **Dark Theme**: Sophisticated dark color scheme with purple accents
+- **Light + Dark Themes**: Crisp light default with rich dark variant
 - **Gradients**: Beautiful gradient backgrounds and buttons
 - **Glassmorphism**: Subtle backdrop blur effects
 - **Shadows**: Layered shadow system for depth
@@ -79,10 +75,10 @@ After generating, reload the extension to see updated icons.
 - **Smooth Transitions**: 0.2s transitions for all interactive elements
 
 ### Color Palette
-- **Primary**: Deep dark blues (#0f0f23, #1a1a2e)
-- **Accent**: Purple gradients (#4f46e5, #7c3aed)
-- **Cards**: Subtle card backgrounds (#16213e)
-- **Borders**: Refined border colors (#2d2d44)
+- **Light**: Whites and slate text (e.g., #ffffff, #0f172a, #64748b)
+- **Dark**: Deep dark blues (#0f0f23, #1a1a2e)
+- **Accent**: Blues/purples (#3b82f6, #7c3aed)
+- **Cards/Borders**: Subtle cards and refined borders
 
 ## 🚀 Quick Actions
 
@@ -111,9 +107,9 @@ The extension includes five quick action buttons:
 ## 🎯 User Experience
 
 - **Welcome Message**: Friendly onboarding experience
-- **Context Toggle**: Easy control over page content inclusion
+- **Context Toggle**: Easy control over page content inclusion (label always visible)
 - **Settings Access**: Quick access to extension settings
-- **Smooth Scrolling**: Enhanced scrollbar with hover effects
+- **Clean Scrolling**: Hidden scrollbars; smooth trackpad/touch scrolling
 - **Keyboard Navigation**: Full keyboard support
 
 ## 🔧 Installation
@@ -139,6 +135,17 @@ The extension uses CSS custom properties for easy theming:
 - [ ] Conversation export
 - [ ] Voice input support
 - [ ] Multi-language support
+
+## 📝 Changelog
+
+2025-08-30 — UI consistency and cleanup
+
+- Consistent rounded design: action buttons, header buttons, send button → pill; checkbox → circular.
+- Page Context label always visible on small screens; removed small-screen hide rule.
+- Reduced heights: tighter padding on quick actions and context toggle; send button 36px → 32px.
+- Stable hover states: removed upward shift to prevent overflow/clipping.
+- Layout tightening: smaller `messages-container` padding; reduced side margins on messages and welcome card, with smaller margins on very small screens.
+- CSS cleanup: removed unused selectors and redundant scrollbar styles; consolidated hidden scrollbars.
 
 ---
 

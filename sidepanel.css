@@ -102,11 +102,7 @@ body {
   justify-content: flex-end; /* right-align header controls */
 }
 
-.brand-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+/* removed unused .brand-section (not present in sidepanel.html) */
 
 .header-actions {
   display: flex;
@@ -119,7 +115,7 @@ body {
   height: 32px;
   background: rgba(0, 0, 0, 0.05);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 999px; /* pill shape for consistency */
   color: var(--muted);
   cursor: pointer;
   display: flex;
@@ -137,7 +133,7 @@ body {
   background: rgba(0, 0, 0, 0.1);
   color: var(--fg);
   border-color: var(--accent);
-  transform: translateY(-1px);
+  transform: none; /* keep from shifting */
   box-shadow: var(--shadow-md);
 }
 
@@ -150,62 +146,23 @@ body {
   font-size: 14px;
 }
 
-[data-theme="dark"] .theme-btn i {
-  transform: rotate(180deg);
-}
+/* removed unused dark-mode rotate for non-existent <i> element */
 
-.brand-icon {
-  width: 32px;
-  height: 32px;
-  background: var(--gradient-accent);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  box-shadow: var(--shadow-lg);
-  position: relative;
-  overflow: hidden;
-}
-
-.brand-icon::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transform: rotate(45deg);
-  animation: shine 3s ease-in-out infinite;
-}
+/* removed unused .brand-icon styles and shimmer overlay */
 
 @keyframes shine {
   0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
   50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
 }
 
-.brand-text h1 {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--fg);
-  margin: 0;
-  letter-spacing: -0.025em;
-}
-
-.brand-subtitle {
-  font-size: 10px;
-  color: var(--muted);
-  margin: 0;
-  font-weight: 500;
-}
+/* removed unused .brand-text and .brand-subtitle */
 
 .settings-btn {
   width: 32px;
   height: 32px;
   background: rgba(0, 0, 0, 0.05);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 999px; /* pill shape for consistency */
   color: var(--muted);
   cursor: pointer;
   display: flex;
@@ -237,7 +194,7 @@ body {
   background: rgba(0, 0, 0, 0.1);
   color: var(--fg);
   border-color: var(--accent);
-  transform: translateY(-1px);
+  transform: none; /* keep from shifting */
   box-shadow: var(--shadow-md);
 }
 
@@ -377,20 +334,7 @@ body {
   overflow: hidden;
 }
 
-/* Optional: thinner scrollbar for horizontal quick-actions */
-.qa-buttons::-webkit-scrollbar {
-  height: 6px;
-}
-.qa-buttons::-webkit-scrollbar-track {
-  background: transparent;
-}
-.qa-buttons::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-.qa-buttons::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
-}
+/* removed thinner scrollbar styling; quick-actions uses hidden scrollbars below */
 
 .action-btn::before {
   content: '';
@@ -431,20 +375,7 @@ body {
   white-space: nowrap;
 }
 
-/* Context Toggle */
-.context-toggle {
-  padding: 0;
-  background: transparent;
-  border-bottom: none;
-  flex-shrink: 0;
-  margin-bottom: 8px;
-  display: flex;
-  justify-content: center;
-}
-
-[data-theme="dark"] .context-toggle {
-  background: rgba(255, 255, 255, 0.02);
-}
+/* removed unused .context-toggle styles */
 
 .ctx {
   display: flex;
@@ -517,7 +448,7 @@ body {
 /* Messages Container */
 .messages-container {
   flex: 1 1 auto; /* grow and shrink properly */
-  padding: 10px;
+  padding: 6px; /* reduced to minimize gutter */
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -638,7 +569,7 @@ body {
   background: rgba(59, 130, 246, 0.1);
   border-color: var(--accent);
   color: var(--fg);
-  margin-right: 12px; /* shift away from right edge spacing */
+  margin-right: 6px; /* reduced edge spacing */
   position: relative;
 }
 
@@ -648,7 +579,7 @@ body {
 
 .msg.assistant { 
   background: var(--card);
-  margin-left: 12px; /* shift away from left edge spacing */
+  margin-left: 6px; /* reduced edge spacing */
   position: relative;
 }
 
@@ -783,12 +714,12 @@ body {
 }
 
 #send {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px; /* match compact pill buttons */
   background: var(--card);
   border: 1px solid var(--border);
   color: var(--success);
-  border-radius: 10px;
+  border-radius: 999px; /* pill shape */
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -798,7 +729,7 @@ body {
 }
 
 #send:hover {
-  transform: translateY(-1px);
+  transform: none; /* prevent shift to keep alignment */
   box-shadow: var(--shadow-md);
   border-color: var(--success);
   background: var(--card-hover);
@@ -833,24 +764,7 @@ body {
   transform: scale(0.98) translateY(0) !important;
 }
 
-/* Scrollbar Styling */
-.messages-container::-webkit-scrollbar {
-  width: 8px;
-}
-
-.messages-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.messages-container::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
-  transition: background 0.2s ease;
-}
-
-.messages-container::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
-}
+/* removed visible scrollbar styling; hidden scrollbars are defined later */
 
 /* Loading Animation */
 .loading {
@@ -871,19 +785,19 @@ body {
 @media (max-width: 400px) {
   .welcome-message {
     padding: 2px 2px;
-    margin: 0 16px;
+    margin: 0 8px; /* reduced side margin */
   }
-  
+
   .welcome-icon {
     width: 48px;
     height: 48px;
   }
-  
+
   .msg {
-    margin-left: 16px;
-    margin-right: 16px;
+    margin-left: 8px;  /* reduced side margin */
+    margin-right: 8px; /* reduced side margin */
   }
-  
+
   .msg.assistant::after,
   .msg.user::after {
     display: none;

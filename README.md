@@ -6,6 +6,57 @@ A beautiful, modern Chrome extension that provides an AI-powered chat interface 
 
 - **Beautiful Modern UI**: Clean, gradient-based design with smooth animations
 - **Brain Icon Branding**: Custom brain SVG icon representing AI intelligence
+
+## Icon Assets
+
+The extension uses a unified brain icon across the UI and manifest.
+
+- Source SVG: `icons/brain.svg` (uses brand gradient to match CSS `--gradient-accent`).
+- Generated PNGs: `icons/brain-16.png`, `-32`, `-48`, `-64`, `-128`, `-256`.
+- Manifest is configured to use these PNGs for extension and toolbar icons.
+
+To regenerate crisp PNGs from the SVG, run one of the following (depending on what you have installed):
+
+Using the helper script (auto-detects tools):
+
+```sh
+./scripts/render-icons.sh
+```
+
+Manually with rsvg-convert (librsvg):
+
+```sh
+rsvg-convert -w 16 -h 16 icons/brain.svg -o icons/brain-16.png
+rsvg-convert -w 32 -h 32 icons/brain.svg -o icons/brain-32.png
+rsvg-convert -w 48 -h 48 icons/brain.svg -o icons/brain-48.png
+rsvg-convert -w 64 -h 64 icons/brain.svg -o icons/brain-64.png
+rsvg-convert -w 128 -h 128 icons/brain.svg -o icons/brain-128.png
+rsvg-convert -w 256 -h 256 icons/brain.svg -o icons/brain-256.png
+```
+
+With Inkscape:
+
+```sh
+inkscape icons/brain.svg -w 16 -h 16 -o icons/brain-16.png
+inkscape icons/brain.svg -w 32 -h 32 -o icons/brain-32.png
+inkscape icons/brain.svg -w 48 -h 48 -o icons/brain-48.png
+inkscape icons/brain.svg -w 64 -h 64 -o icons/brain-64.png
+inkscape icons/brain.svg -w 128 -h 128 -o icons/brain-128.png
+inkscape icons/brain.svg -w 256 -h 256 -o icons/brain-256.png
+```
+
+On macOS (Preview/sips):
+
+```sh
+sips -s format png icons/brain.svg --resampleWidth 16 --out icons/brain-16.png
+sips -s format png icons/brain.svg --resampleWidth 32 --out icons/brain-32.png
+sips -s format png icons/brain.svg --resampleWidth 48 --out icons/brain-48.png
+sips -s format png icons/brain.svg --resampleWidth 64 --out icons/brain-64.png
+sips -s format png icons/brain.svg --resampleWidth 128 --out icons/brain-128.png
+sips -s format png icons/brain.svg --resampleWidth 256 --out icons/brain-256.png
+```
+
+After generating, reload the extension to see updated icons.
 - **Quick Action Buttons**: Pre-defined templates for common tasks
 - **Real-time Chat**: Stream responses from Gemini AI
 - **Page Context**: Option to include page content in conversations

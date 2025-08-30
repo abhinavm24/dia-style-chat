@@ -15,7 +15,7 @@
   "permissions": ["activeTab", "storage", "sidePanel", "scripting"],
   "host_permissions": ["https://generativelanguage.googleapis.com/*"],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; script-src-elem 'self' 'unsafe-inline' https://cdnjs.cloudflare.com/;"
+    "extension_pages": "default-src 'none'; base-uri 'self'; script-src 'self'; object-src 'self'; style-src 'self'; font-src 'self' data:; img-src 'self' data:; connect-src 'self' https://generativelanguage.googleapis.com; frame-src 'self';"
   },
   "background": { "service_worker": "background.js", "type": "module" },
   "action": { 

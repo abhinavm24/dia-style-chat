@@ -53,7 +53,7 @@
 
 html, body { 
   height: 100%; 
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 }
 
 body {
@@ -99,7 +99,7 @@ body {
 .header-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end; /* right-align header controls */
 }
 
 .brand-section {
@@ -145,7 +145,7 @@ body {
   background: rgba(255, 255, 255, 0.15);
 }
 
-.theme-btn i {
+.theme-btn .icon {
   transition: transform 0.3s ease;
   font-size: 14px;
 }
@@ -215,6 +215,20 @@ body {
   backdrop-filter: blur(10px);
 }
 
+/* Expand header buttons to show labels */
+.header-actions .theme-btn,
+.header-actions .settings-btn {
+  height: 32px;
+  width: auto;
+  padding: 0 10px;
+  gap: 6px;
+}
+
+.header-actions .btn-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
 [data-theme="dark"] .settings-btn {
   background: rgba(255, 255, 255, 0.1);
 }
@@ -231,7 +245,7 @@ body {
   background: rgba(255, 255, 255, 0.15);
 }
 
-.settings-btn i {
+.settings-btn .icon {
   font-size: 14px;
 }
 
@@ -282,7 +296,7 @@ body {
   font-weight: 600;
 }
 
-.settings-title i {
+.settings-title .icon {
   color: var(--accent);
 }
 
@@ -405,7 +419,7 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
-.action-btn i {
+.action-btn .icon {
   font-size: 12px;
   color: var(--accent);
 }

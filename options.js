@@ -3,7 +3,7 @@ const apiKeyEl = document.getElementById("apiKey");
 const modelEl = document.getElementById("model");
 const streamEl = document.getElementById("stream");
 const saveBtn = document.getElementById("save");
-const themeBtns = document.querySelectorAll(".theme-btn");
+// No theme controls in options; theme follows side panel
 
 let currentTheme = 'light';
 
@@ -11,17 +11,6 @@ let currentTheme = 'light';
 function setTheme(theme) {
   currentTheme = theme;
   document.documentElement.setAttribute('data-theme', theme);
-  
-  // Update active button state
-  themeBtns.forEach(btn => {
-    btn.classList.remove('active');
-    if (btn.dataset.theme === theme) {
-      btn.classList.add('active');
-    }
-  });
-  
-  // Save theme preference
-  chrome.storage.sync.set({ theme: theme });
 }
 
 // Initialize theme
@@ -30,12 +19,7 @@ async function initTheme() {
   setTheme(theme);
 }
 
-// Theme button event listeners
-themeBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    setTheme(btn.dataset.theme);
-  });
-});
+// No toggle here; options reflects stored theme on load
 
 async function load() {
   const { geminiApiKey, geminiModel, enableStreaming } = await chrome.storage.sync.get({
@@ -73,4 +57,10 @@ saveBtn.addEventListener("click", save);
 (async function init() {
   await initTheme();
   await load();
+  // Live-sync theme changes from other pages (e.g., side panel)
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'sync' && changes.theme) {
+      setTheme(changes.theme.newValue);
+    }
+  });
 })();

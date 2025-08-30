@@ -24,11 +24,9 @@ function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   
   // Update theme toggle button icon
-  const icon = themeToggleBtn.querySelector('i');
-  if (theme === 'dark') {
-    icon.className = 'fas fa-sun';
-  } else {
-    icon.className = 'fas fa-moon';
+  const icon = themeToggleBtn.querySelector('.icon');
+  if (icon) {
+    icon.textContent = theme === 'dark' ? '☀️' : '🌙';
   }
   
   // Save theme preference
@@ -221,11 +219,11 @@ function setBusy(busy, placeholderText) {
     const prevPh = promptEl.getAttribute('data-prev-ph') || promptEl.getAttribute('placeholder') || '';
     promptEl.setAttribute('data-prev-ph', prevPh);
     promptEl.setAttribute('placeholder', placeholderText || 'Sending…');
-    if (sendBtn) sendBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+    if (sendBtn) sendBtn.innerHTML = '<span class="loading" aria-hidden="true"></span>';
   } else {
     const prevPh = promptEl.getAttribute('data-prev-ph') || 'Ask about this page…';
     promptEl.setAttribute('placeholder', prevPh);
-    if (sendBtn) sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+    if (sendBtn) sendBtn.innerHTML = '<span class="icon" aria-hidden="true">📨</span>';
   }
 }
 
@@ -342,6 +340,12 @@ promptEl.addEventListener('keydown', (e) => {
 (async function init() {
   // Initialize theme first
   await initTheme();
+  // Live-sync theme changes from other pages (e.g., options)
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'sync' && changes.theme) {
+      setTheme(changes.theme.newValue);
+    }
+  });
   
   currentTabId = await getActiveTabId();
   

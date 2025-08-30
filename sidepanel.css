@@ -785,23 +785,25 @@ body {
 }
 
 #send {
-  width: 40px;
-  height: 40px;
-  background: var(--gradient-accent);
-  border: none;
-  color: white;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--success);
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
 }
 
 #send:hover {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
+  border-color: var(--success);
+  background: var(--card-hover);
 }
 
 #send:active {

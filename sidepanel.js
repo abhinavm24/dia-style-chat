@@ -11,6 +11,11 @@ const closeSettingsBtn = document.getElementById("closeSettings");
 const themeToggleBtn = document.getElementById("themeToggle");
 const quickBtns = document.querySelectorAll(".action-btn");
 
+// Preserve original send button content so we can restore it after spinners
+if (sendBtn && !sendBtn.dataset.defaultHtml) {
+  sendBtn.dataset.defaultHtml = sendBtn.innerHTML;
+}
+
 let history = []; // {role:'user'|'model', text:string}
 let streamCounter = 0;
 let currentTabId = null;
@@ -147,7 +152,7 @@ function isNearBottom() {
 function addMessage(role, text) {
   const div = document.createElement("div");
   div.className = `msg ${role}`;
-  div.innerHTML = formatMessage(text);
+  div.textContent = text;
   
   // Add entrance animation
   div.style.opacity = '0';
@@ -168,7 +173,7 @@ function addMessage(role, text) {
 }
 
 function updateMessage(el, more) {
-  el.innerHTML += formatMessage(more, true);
+  el.textContent += more;
   
   // Only auto-scroll if user is near bottom
   if (isNearBottom()) {
@@ -223,7 +228,13 @@ function setBusy(busy, placeholderText) {
   } else {
     const prevPh = promptEl.getAttribute('data-prev-ph') || 'Ask about this page…';
     promptEl.setAttribute('placeholder', prevPh);
-    if (sendBtn) sendBtn.innerHTML = '<span class="icon" aria-hidden="true">📨</span>';
+    if (sendBtn) {
+      const fallbackArrow = `
+        <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3c.28 0 .53.11.71.29l7 7a1 1 0 01-1.42 1.42L13 6.41V20a1 1 0 11-2 0V6.41L5.71 11.7a1 1 0 01-1.42-1.42l7-7A1 1 0 0112 3z"/>
+        </svg>`;
+      sendBtn.innerHTML = sendBtn.dataset.defaultHtml || fallbackArrow.trim();
+    }
   }
 }
 
@@ -395,19 +406,28 @@ promptEl.addEventListener('keydown', (e) => {
 })();
 
 // Enhanced message display with markdown-like formatting
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function formatMessage(text, isDelta = false) {
-  // Simple formatting for better readability
-  let formatted = text;
+  // Escape any HTML to avoid injecting styles/scripts/fonts from model or page content
+  let safe = escapeHtml(text);
   if (!isDelta) {
-    // Full message formatting
-    formatted = formatted
+    // Apply light markdown after escaping
+    safe = safe
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/`(.*?)`/g, '<code>$1</code>')
       .replace(/\n/g, '<br>');
   } else {
     // For deltas, just handle newlines
-    formatted = formatted.replace(/\n/g, '<br>');
+    safe = safe.replace(/\n/g, '<br>');
   }
-  return formatted;
+  return safe;
 }

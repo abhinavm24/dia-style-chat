@@ -417,22 +417,23 @@ body {
 
 /* Messages Container */
 .messages-container {
-  flex: 1;
+  flex: 1 1 auto; /* grow and shrink properly */
   padding: 10px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px; /* tighter spacing to match UI */
   background: transparent;
   min-height: 0; /* Important for flexbox scrolling */
 }
 
 .welcome-message {
   text-align: center;
-  padding: 32px 20px;
+  padding: 16px 14px; /* compact to match rest */
+  margin-top: 8px; /* breathing room from top */
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 12px; /* match message radius */
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   position: relative;
@@ -500,15 +501,16 @@ body {
 /* Message Styles */
 .msg {
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px 20px;
+  border-radius: 12px; /* more compact radius */
+  padding: 12px 14px;  /* more compact padding */
   background: var(--card);
   white-space: pre-wrap;
   box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* allow tails and content to show fully */
   word-wrap: break-word;
+  overflow-wrap: anywhere; /* prevent long tokens from overflowing */
   line-height: 1.5;
 }
 
@@ -537,7 +539,7 @@ body {
   background: rgba(59, 130, 246, 0.1);
   border-color: var(--accent);
   color: var(--fg);
-  margin-left: 20px;
+  margin-right: 12px; /* shift away from right edge spacing */
   position: relative;
 }
 
@@ -547,14 +549,14 @@ body {
 
 .msg.assistant { 
   background: var(--card);
-  margin-right: 20px;
+  margin-left: 12px; /* shift away from left edge spacing */
   position: relative;
 }
 
 .msg.assistant::after {
   content: '';
   position: absolute;
-  top: 16px;
+  top: 6px; /* align with compact padding */
   left: -8px;
   width: 0;
   height: 0;
@@ -566,7 +568,7 @@ body {
 .msg.user::after {
   content: '';
   position: absolute;
-  top: 16px;
+  top: 6px; /* align with compact padding */
   right: -8px;
   width: 0;
   height: 0;
@@ -583,18 +585,18 @@ body {
 .typing-indicator {
   display: flex;
   gap: 4px;
-  padding: 16px 20px;
+  padding: 12px 14px; /* match msg padding */
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  margin-right: 20px;
+  border-radius: 12px; /* match msg radius */
+  margin-left: 12px;
   position: relative;
 }
 
 .typing-indicator::after {
   content: '';
   position: absolute;
-  top: 16px;
+  top: 12px; /* align with compact padding */
   left: -8px;
   width: 0;
   height: 0;
@@ -795,8 +797,6 @@ body {
   scrollbar-width: none;    /* Firefox */
 }
 .messages-container::-webkit-scrollbar {
-  width: 0 !important;
-  height: 0 !important;
   display: none !important; /* WebKit */
 }
 
@@ -805,7 +805,5 @@ body {
   scrollbar-width: none;    /* Firefox */
 }
 .qa-buttons::-webkit-scrollbar {
-  width: 0 !important;
-  height: 0 !important;
   display: none !important; /* WebKit */
 }

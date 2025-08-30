@@ -277,7 +277,7 @@ promptEl.addEventListener('keydown', (e) => {
         setTimeout(() => {
           welcomeMessage.style.display = 'none';
         }, 300);
-      }, 3000);
+      }, 10000);
     }
   }
   

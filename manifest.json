@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tab Chat",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Chat with your current tab in a Chrome side panel using Gemini.",
   "icons": {
     "16": "icons/icon-16.png",

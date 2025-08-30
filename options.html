@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Dia-Style Chat • Settings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 16px; max-width: 720px; margin: 0 auto; }
+      label { display: block; margin-top: 12px; font-weight: 600; }
+      input[type="text"], input[type="password"] { width: 100%; padding: 10px; border: 1px solid #bbb; border-radius: 8px; }
+      .row { display: grid; grid-template-columns: 1fr 200px; gap: 12px; }
+      .muted { color: #666; font-size: 12px; }
+      button { margin-top: 16px; padding: 10px 14px; border: 0; background: #222; color: #fff; border-radius: 8px; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <h1>Dia-Style Chat • Settings</h1>
+    <p class="muted">
+      Get a Gemini API key from Google AI Studio, then paste it below. Choose a model (e.g.,
+      <code>gemini-1.5-flash-latest</code> or a newer <code>gemini-2.5-*</code> variant).
+    </p>
+    <label>Gemini API Key</label>
+    <input id="apiKey" type="password" placeholder="AIza..." />
+    <label>Model</label>
+    <div class="row">
+      <input id="model" type="text" value="gemini-1.5-flash-latest" />
+      <label><input id="stream" type="checkbox" checked /> Streaming</label>
+    </div>
+    <button id="save">Save</button>
+    <p class="muted">
+      Privacy: Page content is only sent to Gemini when you submit a message with “Include page content”
+      enabled in the side panel.
+    </p>
+    <script src="options.js" defer></script>
+  </body>
+</html>

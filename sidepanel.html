@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Dia-Style Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <div class="brand">Dia-Style Chat</div>
+        <div class="spacer"></div>
+        <button id="openOptions" title="Settings">⚙️</button>
+      </header>
+
+      <div class="quick-actions">
+        <button data-template="Summarize this page.">Summarize</button>
+        <button data-template="Explain the selected text step by step.">Explain</button>
+        <button data-template="Translate the selected text to English.">Translate</button>
+        <button data-template="List pros and cons from this page.">Pros/Cons</button>
+      </div>
+
+      <label class="ctx">
+        <input type="checkbox" id="includePage" checked />
+        Include page content
+      </label>
+
+      <main id="messages"></main>
+
+      <form id="composer">
+        <input id="prompt" type="text" placeholder="Ask about this page…" autocomplete="off" />
+        <button id="send" type="submit">Send</button>
+      </form>
+    </div>
+    <script src="sidepanel.js" defer></script>
+  </body>
+</html>

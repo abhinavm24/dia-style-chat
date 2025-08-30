@@ -3,6 +3,7 @@ const messagesEl = document.getElementById("messages");
 const promptEl = document.getElementById("prompt");
 const formEl = document.getElementById("composer");
 const includePageEl = document.getElementById("includePage");
+const sendBtn = document.getElementById("send");
 const openOptionsBtn = document.getElementById("openOptions");
 const themeToggleBtn = document.getElementById("themeToggle");
 const quickBtns = document.querySelectorAll(".action-btn");
@@ -11,6 +12,7 @@ let history = []; // {role:'user'|'model', text:string}
 let streamCounter = 0;
 let currentTabId = null;
 let isTyping = false;
+let isSending = false;
 let currentTheme = 'light'; // Default theme
 
 // Theme management
@@ -47,6 +49,7 @@ themeToggleBtn.onclick = toggleTheme;
 
 quickBtns.forEach((b) => b.addEventListener("click", async (e) => {
   e.preventDefault();
+  if (isSending) return;
   let tmpl = b.dataset.template || '';
 
   // Try to fetch current selection from the active tab
@@ -78,7 +81,13 @@ quickBtns.forEach((b) => b.addEventListener("click", async (e) => {
     // ignore if we can't read selection; fall back to template only
   }
 
-  promptEl.value = tmpl;
+  // Auto-send the quick action without requiring the Send click
+  if (tmpl.trim()) {
+    // Clear the prompt immediately for snappy UX
+    promptEl.value = '';
+    await askGemini(tmpl);
+  }
+  // Keep focus ready for next input
   promptEl.focus();
   // Add subtle animation feedback
   b.style.transform = 'scale(0.95)';
@@ -178,8 +187,29 @@ function hideTypingIndicator(typingEl) {
   isTyping = false;
 }
 
+function setBusy(busy, placeholderText) {
+  isSending = busy;
+  promptEl.disabled = busy;
+  sendBtn.disabled = busy;
+  quickBtns.forEach(btn => btn.disabled = busy);
+  promptEl.setAttribute('aria-busy', String(busy));
+  if (busy) {
+    // Show sending placeholder and spinner
+    const prevPh = promptEl.getAttribute('data-prev-ph') || promptEl.getAttribute('placeholder') || '';
+    promptEl.setAttribute('data-prev-ph', prevPh);
+    promptEl.setAttribute('placeholder', placeholderText || 'Sending…');
+    if (sendBtn) sendBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+  } else {
+    const prevPh = promptEl.getAttribute('data-prev-ph') || 'Ask about this page…';
+    promptEl.setAttribute('placeholder', prevPh);
+    if (sendBtn) sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+  }
+}
+
 async function askGemini(question, opts = {}) {
   if (!question.trim()) return;
+  if (isSending) return;
+  setBusy(true, 'Sending…');
   
   const userEl = addMessage("user", question);
   history.push({ role: "user", text: question });
@@ -203,6 +233,8 @@ async function askGemini(question, opts = {}) {
         streamed = true;
         hideTypingIndicator(typingEl);
         assistantEl = addMessage("assistant", "");
+        // Re-enable input as soon as streaming starts
+        setBusy(false);
       }
       buffer += msg.delta;
       updateMessage(assistantEl, msg.delta);
@@ -211,6 +243,8 @@ async function askGemini(question, opts = {}) {
   chrome.runtime.onMessage.addListener(onStream);
 
   try {
+    // Switch to waiting state while the request is in-flight
+    setBusy(true, 'Waiting for response…');
     const res = await chrome.runtime.sendMessage({
       type: "ASK_GEMINI",
       tabId,
@@ -226,6 +260,8 @@ async function askGemini(question, opts = {}) {
     if (!streamed) {
       hideTypingIndicator(typingEl);
       assistantEl = addMessage("assistant", "");
+      // No streaming case: re-enable now that assistant message started
+      setBusy(false);
     }
 
     if (res?.error) {
@@ -245,15 +281,19 @@ async function askGemini(question, opts = {}) {
     } else {
       updateMessage(assistantEl, `⚠️ ${e.message || e}`);
     }
-  } finally {
-    promptEl.value = "";
+    setBusy(false);
   }
 }
 
 // Enhanced form handling
 formEl.addEventListener("submit", async (e) => {
   e.preventDefault();
-  await askGemini(promptEl.value);
+  if (isSending) return;
+  const q = promptEl.value;
+  if (!q.trim()) return;
+  // Clear immediately upon sending
+  promptEl.value = '';
+  await askGemini(q);
 });
 
 // Add input focus effects

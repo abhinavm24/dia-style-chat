@@ -712,6 +712,26 @@ body {
   transform: scale(0.95) translateY(0) !important;
 }
 
+/* Disabled states */
+#send[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+#prompt:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.action-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none !important;
+}
+
 /* Enhanced button states */
 .action-btn:active {
   transform: scale(0.98) translateY(0) !important;

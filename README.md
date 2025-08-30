@@ -150,3 +150,59 @@ The extension uses CSS custom properties for easy theming:
 ---
 
 Built with ❤️ and modern web technologies for the best user experience.
+
+## Build & Release
+
+This repo includes a minimal, dependency-free build setup to produce Chrome and Firefox-ready bundles and zip them for release.
+
+- Requirements: Node 18+ (Node 20 recommended) and the `zip` CLI in PATH.
+
+### Commands
+
+- `npm run clean` — remove `dist/` and `release/`.
+- `npm run version` — sync `manifest.json` version from `package.json`.
+- `npm run preflight` — validate manifest, files, icons, and permissions.
+- `npm run build` — build Chrome and Firefox bundles into `dist/`.
+- `npm run build:chrome` — build only Chrome.
+- `npm run build:firefox` — build only Firefox (manifest adapted, code unchanged).
+- `npm run package` — create zips in `release/` with versioned names.
+- `npm run release` — build + package in one go.
+- `npm run verify` — clean, build, package, and run basic artifact checks.
+
+Artifacts:
+- `dist/chrome` and `release/TabChat-<version>-chrome.zip` for Chrome.
+- `dist/firefox` and `release/TabChat-<version>-firefox.zip` as a Firefox-ready bundle (sidebar manifest). Further polyfills may be needed before publishing to AMO.
+
+### Chrome Web Store Upload (optional)
+
+You can upload and publish to the Chrome Web Store via the included script. Provide these environment variables (locally or as GitHub Secrets):
+
+- `CWS_EXTENSION_ID` — your extension ID
+- `CWS_CLIENT_ID` — OAuth client ID
+- `CWS_CLIENT_SECRET` — OAuth client secret
+- `CWS_REFRESH_TOKEN` — OAuth refresh token
+- `CWS_CHANNEL` — optional (default is `default`; can use `trustedTesters`)
+
+Run: `npm run cws:upload`
+
+### GitHub Actions
+
+On tag push (e.g., `v1.0.1`), the workflow builds, packages, attaches zips to a GitHub Release, and, if CWS secrets are present, uploads to Chrome Web Store.
+
+### Firefox Readiness
+
+The build converts the manifest for Firefox by:
+- Replacing `side_panel` with `sidebar_action`.
+- Removing the `sidePanel` permission.
+- Adding `browser_specific_settings.gecko` with a placeholder ID.
+
+To customize, set environment variables when building:
+- `GECKO_ID` (default `tab-chat@example.com`)
+- `GECKO_MIN_VERSION` (default `109.0`)
+
+Note: The code currently uses `chrome.*` APIs. For broader Firefox compatibility later, consider adding `webextension-polyfill` and switching to `browser.*` or a thin compatibility wrapper.
+
+### Environment
+
+- Use Node 20 (`.nvmrc` included). On CI, `actions/setup-node@v4` pins Node.
+- Copy `.env.example` to `.env` (optional) and export vars when running `cws:upload` locally.

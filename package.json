@@ -1,0 +1,22 @@
+{
+  "name": "tab-chat-extension",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build scripts and release automation for Tab Chat (Chrome first, Firefox-ready).",
+  "type": "module",
+  "scripts": {
+    "clean": "node scripts/clean.mjs",
+    "version": "node scripts/version.mjs",
+    "preflight": "node scripts/preflight.mjs",
+    "build:chrome": "node scripts/build.mjs chrome",
+    "build:firefox": "node scripts/build.mjs firefox",
+    "build": "npm run version && npm run preflight && node scripts/build.mjs all",
+    "package": "node scripts/package.mjs",
+    "release": "npm run build && npm run package",
+    "verify": "npm run clean && npm run release && node scripts/verify.mjs",
+    "cws:upload": "node scripts/cws-upload.mjs"
+  },
+  "engines": {
+    "node": ">=18 <25"
+  }
+}

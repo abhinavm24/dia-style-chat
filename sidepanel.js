@@ -5,6 +5,8 @@ const formEl = document.getElementById("composer");
 const includePageEl = document.getElementById("includePage");
 const sendBtn = document.getElementById("send");
 const openOptionsBtn = document.getElementById("openOptions");
+const exportBtn = document.getElementById("exportChat");
+const clearBtn = document.getElementById("clearChat");
 const settingsPanel = document.getElementById("settingsPanel");
 const settingsFrame = document.getElementById("settingsFrame");
 const closeSettingsBtn = document.getElementById("closeSettings");
@@ -19,6 +21,7 @@ if (sendBtn && !sendBtn.dataset.defaultHtml) {
 let history = []; // {role:'user'|'model', text:string}
 let streamCounter = 0;
 let currentTabId = null;
+let currentOrigin = null;
 let isTyping = false;
 let isSending = false;
 let currentTheme = 'system'; // Default to system to respect OS
@@ -107,6 +110,17 @@ document.addEventListener('keydown', (e) => {
 });
 themeToggleBtn.onclick = toggleTheme;
 
+function applyScrollSpeed(setting) {
+  const map = { slow: 120, normal: 220, fast: 400 };
+  SCROLL_SPEED = map[setting] || 220;
+}
+
+// Set compact tooltips for quick actions
+quickBtns.forEach((b) => {
+  const label = b.textContent?.trim() || b.dataset.template || '';
+  if (label) b.title = label;
+});
+
 quickBtns.forEach((b) => b.addEventListener("click", async (e) => {
   e.preventDefault();
   if (isSending) return;
@@ -171,22 +185,62 @@ async function getActiveTabId() {
 }
 
 // Enhanced auto-scroll functionality
-function scrollToBottom(smooth = true) {
-  messagesEl.scrollTo({
-    top: messagesEl.scrollHeight,
-    behavior: 'smooth'
+let stickToBottom = true; // auto-scroll unless user scrolls up
+let scrollAnimating = false;
+let scrollTarget = 0;
+let lastScrollTs = 0;
+let SCROLL_SPEED = 220; // px/sec for readable auto-scroll
+function scrollToBottom() {
+  if (!stickToBottom) return;
+  scrollTarget = Math.max(0, messagesEl.scrollHeight - messagesEl.clientHeight);
+  if (scrollAnimating) return; // animator will pick up new target
+  scrollAnimating = true;
+  lastScrollTs = performance.now();
+  requestAnimationFrame(function step(ts) {
+    if (!stickToBottom) { scrollAnimating = false; return; }
+    const dt = Math.max(0.001, (ts - lastScrollTs) / 1000);
+    lastScrollTs = ts;
+    // Update target in case content grew
+    scrollTarget = Math.max(0, messagesEl.scrollHeight - messagesEl.clientHeight);
+    const current = messagesEl.scrollTop;
+    const delta = scrollTarget - current;
+    if (Math.abs(delta) < 0.5) {
+      messagesEl.scrollTop = scrollTarget;
+      scrollAnimating = false;
+      return;
+    }
+    const step = Math.sign(delta) * Math.min(Math.abs(delta), SCROLL_SPEED * dt);
+    messagesEl.scrollTop = current + step;
+    requestAnimationFrame(step);
   });
 }
 
 function isNearBottom() {
-  const threshold = 100; // pixels from bottom
+  const threshold = 250; // pixels from bottom (more forgiving)
   return messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < threshold;
 }
+
+function handleScroll() {
+  // If user scrolls up beyond threshold, disable sticky; re-enable when near bottom
+  if (isNearBottom()) {
+    stickToBottom = true;
+  } else {
+    // User likely scrolling/reading older messages
+    stickToBottom = false;
+  }
+  if (!stickToBottom) scrollAnimating = false;
+}
+messagesEl.addEventListener('scroll', handleScroll, { passive: true });
 
 function addMessage(role, text) {
   const div = document.createElement("div");
   div.className = `msg ${role}`;
-  div.textContent = text;
+  if (role === 'assistant') {
+    div.innerHTML = formatMessage(text, false);
+    attachCopyActions(div, text);
+  } else {
+    div.textContent = text;
+  }
   
   // Add entrance animation
   div.style.opacity = '0';
@@ -201,18 +255,78 @@ function addMessage(role, text) {
     div.style.transform = 'translateY(0)';
   }, 50);
   
-  // Auto-scroll to bottom
-  scrollToBottom();
+  // Auto-scroll to bottom unless user has scrolled up
+  if (stickToBottom) scrollToBottom();
   return div;
 }
 
-function updateMessage(el, more) {
-  el.textContent += more;
-  
-  // Only auto-scroll if user is near bottom
-  if (isNearBottom()) {
-    scrollToBottom(false);
+// Simple prompt clamp to avoid excessive payloads
+function clampPrompt(str, max = 4000) {
+  const s = String(str || '').trim();
+  return s.length > max ? s.slice(0, max) : s;
+}
+
+// Error banner with Retry and Settings actions
+function showErrorBanner(message, code, onRetry) {
+  const app = document.getElementById('app') || document.body;
+  // Remove existing banner if present
+  const existing = app.querySelector('.error-banner');
+  if (existing) existing.remove();
+
+  const banner = document.createElement('div');
+  banner.className = 'error-banner';
+  banner.setAttribute('role', 'status');
+  banner.setAttribute('aria-live', 'polite');
+  banner.style.cssText = [
+    'display:flex',
+    'align-items:center',
+    'gap:8px',
+    'position:sticky',
+    'top:0',
+    'z-index:100',
+    'padding:10px 12px',
+    'margin:8px',
+    'border-radius:10px',
+    'background: var(--danger-bg, #fee2e2)',
+    'color: var(--danger-fg, #991b1b)',
+    'border:1px solid var(--danger-br, #fecaca)'
+  ].join(';');
+
+  const text = document.createElement('div');
+  text.style.flex = '1';
+  text.textContent = `⚠️ ${message}`;
+  banner.appendChild(text);
+
+  const retryBtn = document.createElement('button');
+  retryBtn.textContent = 'Retry';
+  retryBtn.className = 'btn-retry';
+  retryBtn.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer;';
+  retryBtn.onclick = () => { banner.remove(); if (typeof onRetry === 'function') onRetry(); };
+  banner.appendChild(retryBtn);
+
+  const settingsBtn = document.createElement('button');
+  settingsBtn.textContent = 'Settings';
+  settingsBtn.className = 'btn-settings';
+  settingsBtn.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer;';
+  settingsBtn.onclick = () => { banner.remove(); openSettingsInPanel(); };
+  // Prefer showing Settings when key/model issues
+  if (code === 'MISSING_KEY' || code === 'BAD_MODEL') {
+    banner.appendChild(settingsBtn);
+  } else {
+    banner.appendChild(settingsBtn);
   }
+
+  app.prepend(banner);
+  // Auto dismiss after 10s
+  setTimeout(() => { if (banner && banner.parentNode) banner.remove(); }, 10000);
+}
+
+function updateMessage(el, more) {
+  // rAF-batched streaming flush: store full text and render markdown per frame
+  const prev = el.dataset.fullText || '';
+  const next = prev + more;
+  el.dataset.fullText = next;
+  scheduleRender(el);
 }
 
 function showTypingIndicator() {
@@ -272,13 +386,37 @@ function setBusy(busy, placeholderText) {
   }
 }
 
+// Render scheduling for streaming
+let rafPending = false;
+const renderQueue = new Set();
+function scheduleRender(el) {
+  renderQueue.add(el);
+  if (rafPending) return;
+  rafPending = true;
+  requestAnimationFrame(() => {
+    renderQueue.forEach((node) => {
+      const full = node.dataset.fullText || node.textContent || '';
+      node.innerHTML = formatMessage(full, false);
+      attachCopyActions(node, full);
+    });
+    renderQueue.clear();
+    rafPending = false;
+    if (stickToBottom) scrollToBottom();
+  });
+}
+
 async function askGemini(question, opts = {}) {
-  if (!question.trim()) return;
+  question = clampPrompt(question);
+  if (!question) return;
   if (isSending) return;
   setBusy(true, 'Sending…');
+  // Hide welcome card immediately when conversation starts
+  const welcomeEl = document.querySelector('.welcome-message');
+  if (welcomeEl) welcomeEl.style.display = 'none';
   
   const userEl = addMessage("user", question);
   history.push({ role: "user", text: question });
+  persistHistory();
 
   const streamId = `s${Date.now()}_${streamCounter++}`;
   
@@ -332,6 +470,8 @@ async function askGemini(question, opts = {}) {
 
     if (res?.error) {
       updateMessage(assistantEl, `⚠️ ${res.error}`);
+      // Offer retry and settings
+      showErrorBanner(res.error, res.code, () => askGemini(question, opts));
       return;
     }
     if (!streamed) {
@@ -339,6 +479,8 @@ async function askGemini(question, opts = {}) {
       buffer = res.text || "";
     }
     history.push({ role: "model", text: buffer });
+    // Persist after assistant reply
+    persistHistory();
   } catch (e) {
     chrome.runtime.onMessage.removeListener(onStream);
     if (!streamed) {
@@ -390,9 +532,23 @@ promptEl.addEventListener('keydown', (e) => {
     if (area === 'sync' && changes.theme) {
       setTheme(changes.theme.newValue);
     }
+    if (area === 'sync' && changes.scrollSpeed) {
+      applyScrollSpeed(changes.scrollSpeed.newValue);
+    }
   });
   
   currentTabId = await getActiveTabId();
+  // Determine origin via snapshot
+  try {
+    const snap = await chrome.tabs.sendMessage(currentTabId, { type: 'EXTRACT_PAGE' });
+    try { currentOrigin = new URL(snap?.url || '').origin; } catch { currentOrigin = null; }
+  } catch { currentOrigin = null; }
+  await loadHistory();
+  // Load scroll speed preference
+  try {
+    const { scrollSpeed } = await chrome.storage.sync.get({ scrollSpeed: 'normal' });
+    applyScrollSpeed(scrollSpeed);
+  } catch {}
   
   // Remove the default welcome message since we have a better one in HTML
   const welcomeMessage = document.querySelector('.welcome-message');
@@ -453,15 +609,119 @@ function formatMessage(text, isDelta = false) {
   // Escape any HTML to avoid injecting styles/scripts/fonts from model or page content
   let safe = escapeHtml(text);
   if (!isDelta) {
-    // Apply light markdown after escaping
+    // Fenced code blocks ```lang\n...```
+    safe = safe.replace(/```([\w+-]*)\n([\s\S]*?)```/g, (m, lang, code) => {
+      return `<pre class="code-block"><code data-lang="${escapeHtml(lang)}">${code}</code></pre>`;
+    });
+    // Inline markdown
     safe = safe
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, '<code>$1</code>')
+      .replace(/`([^`]+?)`/g, '<code>$1</code>')
       .replace(/\n/g, '<br>');
   } else {
-    // For deltas, just handle newlines
     safe = safe.replace(/\n/g, '<br>');
   }
   return safe;
 }
+
+// Copy actions
+function attachCopyActions(container, fullText) {
+  // Avoid duplicating action bars
+  if (container.querySelector('.msg-actions')) return;
+  const bar = document.createElement('div');
+  bar.className = 'msg-actions';
+  bar.style.cssText = 'display:flex; gap:8px; justify-content:flex-end; margin-top:6px;';
+
+  const copyBtn = document.createElement('button');
+  copyBtn.textContent = 'Copy';
+  copyBtn.title = 'Copy message';
+  copyBtn.style.cssText = 'padding:4px 8px; border-radius:8px; border:1px solid var(--border); background:var(--card); cursor:pointer;';
+  copyBtn.onclick = async () => {
+    try { await navigator.clipboard.writeText(fullText || container.innerText || ''); } catch {}
+    copyBtn.textContent = 'Copied!';
+    setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+  };
+  bar.appendChild(copyBtn);
+
+  // Add copy buttons for code blocks
+  container.querySelectorAll('pre.code-block').forEach((pre) => {
+    const btn = document.createElement('button');
+    btn.textContent = 'Copy code';
+    btn.style.cssText = 'margin-left:8px; padding:3px 6px; border-radius:6px; border:1px solid var(--border); background:var(--card); cursor:pointer;';
+    btn.onclick = async (e) => {
+      e.stopPropagation();
+      const code = pre.querySelector('code')?.textContent || '';
+      try { await navigator.clipboard.writeText(code); } catch {}
+      const prev = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = prev, 1200);
+    };
+    bar.appendChild(btn);
+  });
+
+  container.appendChild(bar);
+}
+
+// History persistence per-origin
+function historyKey() {
+  return currentOrigin ? `tc:h:${currentOrigin}` : null;
+}
+
+async function loadHistory() {
+  const key = historyKey();
+  if (!key) return;
+  try {
+    const data = await chrome.storage.local.get({ [key]: [] });
+    const items = Array.isArray(data[key]) ? data[key] : [];
+    history = items;
+    // Render
+    items.forEach((m) => addMessage(m.role, m.text));
+  } catch {}
+}
+
+function capHistory(items) {
+  // Cap turns and bytes
+  let arr = items.slice(-20);
+  let blob = JSON.stringify(arr);
+  while (blob.length > 64 * 1024 && arr.length > 1) {
+    arr = arr.slice(1);
+    blob = JSON.stringify(arr);
+  }
+  return arr;
+}
+
+async function persistHistory() {
+  const key = historyKey();
+  if (!key) return;
+  const capped = capHistory(history);
+  history = capped;
+  try { await chrome.storage.local.set({ [key]: capped }); } catch {}
+}
+
+function exportHistory() {
+  const dt = new Date().toISOString().replace(/[:.]/g, '-');
+  const base = `tab-chat-${dt}`;
+  // JSON
+  const json = JSON.stringify(history, null, 2);
+  const a1 = document.createElement('a');
+  a1.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+  a1.download = `${base}.json`;
+  a1.click();
+  // Markdown
+  const md = history.map((m) => (m.role === 'user' ? `You: ${m.text}` : `Assistant: ${m.text}`)).join('\n\n');
+  const a2 = document.createElement('a');
+  a2.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' }));
+  a2.download = `${base}.md`;
+  a2.click();
+}
+
+async function clearHistory() {
+  const key = historyKey();
+  if (!key) return;
+  try { await chrome.storage.local.remove(key); } catch {}
+  history = [];
+  messagesEl.innerHTML = '';
+}
+
+// Wire header buttons directly (simple and clear)
+if (exportBtn) exportBtn.onclick = () => exportHistory();
+if (clearBtn) clearBtn.onclick = () => clearHistory();

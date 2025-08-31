@@ -52,11 +52,11 @@ Checklists
 - [x] Non‑stream fallback on SSE failure (background)
 - [x] Prompt trimming + clamping (panel)
 - [x] Error banners + actions implemented (panel)
-- [ ] History persisted with caps + clear/export
-- [ ] Safe markdown + copy actions
-- [ ] Stream rAF batching
-- [ ] Browser shim verified in Firefox build
-- [ ] Preflight/verify passing
+- [x] History persisted with caps + clear/export
+- [x] Safe markdown + copy actions
+- [x] Stream rAF batching
+- [x] Browser shim verified in Firefox build
+- [x] Preflight/verify passing
 
 Rollout
 - Phase A: 1–4 (foundations + resilience)
@@ -66,10 +66,9 @@ Rollout
 Progress Notes
 - Phase A utilities scaffolded under `lib/` and wired in background.
 - background.js: per‑tab abort, 20s timeout, 429/5xx backoff, non‑stream fallback.
-- sidepanel.js: prompt clamping and actionable error banners with Retry/Settings.
+- sidepanel.js: prompt clamping, actionable error banners with Retry/Settings, safe markdown, copy actions, rAF stream batching, per‑origin history with caps + export/clear.
 
 Troubleshooting
 - No response: check API key in Settings, network; retry non‑stream.
 - Stuck busy: new prompt cancels previous; reload side panel if needed.
 - Large page: disable page context or raise context slider once added.
-

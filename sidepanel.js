@@ -5,6 +5,8 @@ const formEl = document.getElementById("composer");
 const includePageEl = document.getElementById("includePage");
 const sendBtn = document.getElementById("send");
 const openOptionsBtn = document.getElementById("openOptions");
+const exportBtn = document.getElementById("exportChat");
+const clearBtn = document.getElementById("clearChat");
 const settingsPanel = document.getElementById("settingsPanel");
 const settingsFrame = document.getElementById("settingsFrame");
 const closeSettingsBtn = document.getElementById("closeSettings");
@@ -19,6 +21,7 @@ if (sendBtn && !sendBtn.dataset.defaultHtml) {
 let history = []; // {role:'user'|'model', text:string}
 let streamCounter = 0;
 let currentTabId = null;
+let currentOrigin = null;
 let isTyping = false;
 let isSending = false;
 let currentTheme = 'system'; // Default to system to respect OS
@@ -186,7 +189,12 @@ function isNearBottom() {
 function addMessage(role, text) {
   const div = document.createElement("div");
   div.className = `msg ${role}`;
-  div.textContent = text;
+  if (role === 'assistant') {
+    div.innerHTML = formatMessage(text, false);
+    attachCopyActions(div, text);
+  } else {
+    div.textContent = text;
+  }
   
   // Add entrance animation
   div.style.opacity = '0';
@@ -268,12 +276,11 @@ function showErrorBanner(message, code, onRetry) {
 }
 
 function updateMessage(el, more) {
-  el.textContent += more;
-  
-  // Only auto-scroll if user is near bottom
-  if (isNearBottom()) {
-    scrollToBottom(false);
-  }
+  // rAF-batched streaming flush: store full text and render markdown per frame
+  const prev = el.dataset.fullText || '';
+  const next = prev + more;
+  el.dataset.fullText = next;
+  scheduleRender(el);
 }
 
 function showTypingIndicator() {
@@ -333,6 +340,25 @@ function setBusy(busy, placeholderText) {
   }
 }
 
+// Render scheduling for streaming
+let rafPending = false;
+const renderQueue = new Set();
+function scheduleRender(el) {
+  renderQueue.add(el);
+  if (rafPending) return;
+  rafPending = true;
+  requestAnimationFrame(() => {
+    renderQueue.forEach((node) => {
+      const full = node.dataset.fullText || node.textContent || '';
+      node.innerHTML = formatMessage(full, false);
+      attachCopyActions(node, full);
+    });
+    renderQueue.clear();
+    rafPending = false;
+    if (isNearBottom()) scrollToBottom(false);
+  });
+}
+
 async function askGemini(question, opts = {}) {
   question = clampPrompt(question);
   if (!question) return;
@@ -341,6 +367,7 @@ async function askGemini(question, opts = {}) {
   
   const userEl = addMessage("user", question);
   history.push({ role: "user", text: question });
+  persistHistory();
 
   const streamId = `s${Date.now()}_${streamCounter++}`;
   
@@ -403,6 +430,8 @@ async function askGemini(question, opts = {}) {
       buffer = res.text || "";
     }
     history.push({ role: "model", text: buffer });
+    // Persist after assistant reply
+    persistHistory();
   } catch (e) {
     chrome.runtime.onMessage.removeListener(onStream);
     if (!streamed) {
@@ -457,6 +486,12 @@ promptEl.addEventListener('keydown', (e) => {
   });
   
   currentTabId = await getActiveTabId();
+  // Determine origin via snapshot
+  try {
+    const snap = await chrome.tabs.sendMessage(currentTabId, { type: 'EXTRACT_PAGE' });
+    try { currentOrigin = new URL(snap?.url || '').origin; } catch { currentOrigin = null; }
+  } catch { currentOrigin = null; }
+  await loadHistory();
   
   // Remove the default welcome message since we have a better one in HTML
   const welcomeMessage = document.querySelector('.welcome-message');
@@ -517,15 +552,119 @@ function formatMessage(text, isDelta = false) {
   // Escape any HTML to avoid injecting styles/scripts/fonts from model or page content
   let safe = escapeHtml(text);
   if (!isDelta) {
-    // Apply light markdown after escaping
+    // Fenced code blocks ```lang\n...```
+    safe = safe.replace(/```([\w+-]*)\n([\s\S]*?)```/g, (m, lang, code) => {
+      return `<pre class="code-block"><code data-lang="${escapeHtml(lang)}">${code}</code></pre>`;
+    });
+    // Inline markdown
     safe = safe
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, '<code>$1</code>')
+      .replace(/`([^`]+?)`/g, '<code>$1</code>')
       .replace(/\n/g, '<br>');
   } else {
-    // For deltas, just handle newlines
     safe = safe.replace(/\n/g, '<br>');
   }
   return safe;
 }
+
+// Copy actions
+function attachCopyActions(container, fullText) {
+  // Avoid duplicating action bars
+  if (container.querySelector('.msg-actions')) return;
+  const bar = document.createElement('div');
+  bar.className = 'msg-actions';
+  bar.style.cssText = 'display:flex; gap:8px; justify-content:flex-end; margin-top:6px;';
+
+  const copyBtn = document.createElement('button');
+  copyBtn.textContent = 'Copy';
+  copyBtn.title = 'Copy message';
+  copyBtn.style.cssText = 'padding:4px 8px; border-radius:8px; border:1px solid var(--border); background:var(--card); cursor:pointer;';
+  copyBtn.onclick = async () => {
+    try { await navigator.clipboard.writeText(fullText || container.innerText || ''); } catch {}
+    copyBtn.textContent = 'Copied!';
+    setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+  };
+  bar.appendChild(copyBtn);
+
+  // Add copy buttons for code blocks
+  container.querySelectorAll('pre.code-block').forEach((pre) => {
+    const btn = document.createElement('button');
+    btn.textContent = 'Copy code';
+    btn.style.cssText = 'margin-left:8px; padding:3px 6px; border-radius:6px; border:1px solid var(--border); background:var(--card); cursor:pointer;';
+    btn.onclick = async (e) => {
+      e.stopPropagation();
+      const code = pre.querySelector('code')?.textContent || '';
+      try { await navigator.clipboard.writeText(code); } catch {}
+      const prev = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = prev, 1200);
+    };
+    bar.appendChild(btn);
+  });
+
+  container.appendChild(bar);
+}
+
+// History persistence per-origin
+function historyKey() {
+  return currentOrigin ? `tc:h:${currentOrigin}` : null;
+}
+
+async function loadHistory() {
+  const key = historyKey();
+  if (!key) return;
+  try {
+    const data = await chrome.storage.local.get({ [key]: [] });
+    const items = Array.isArray(data[key]) ? data[key] : [];
+    history = items;
+    // Render
+    items.forEach((m) => addMessage(m.role, m.text));
+  } catch {}
+}
+
+function capHistory(items) {
+  // Cap turns and bytes
+  let arr = items.slice(-20);
+  let blob = JSON.stringify(arr);
+  while (blob.length > 64 * 1024 && arr.length > 1) {
+    arr = arr.slice(1);
+    blob = JSON.stringify(arr);
+  }
+  return arr;
+}
+
+async function persistHistory() {
+  const key = historyKey();
+  if (!key) return;
+  const capped = capHistory(history);
+  history = capped;
+  try { await chrome.storage.local.set({ [key]: capped }); } catch {}
+}
+
+function exportHistory() {
+  const dt = new Date().toISOString().replace(/[:.]/g, '-');
+  const base = `tab-chat-${dt}`;
+  // JSON
+  const json = JSON.stringify(history, null, 2);
+  const a1 = document.createElement('a');
+  a1.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+  a1.download = `${base}.json`;
+  a1.click();
+  // Markdown
+  const md = history.map((m) => (m.role === 'user' ? `You: ${m.text}` : `Assistant: ${m.text}`)).join('\n\n');
+  const a2 = document.createElement('a');
+  a2.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' }));
+  a2.download = `${base}.md`;
+  a2.click();
+}
+
+async function clearHistory() {
+  const key = historyKey();
+  if (!key) return;
+  try { await chrome.storage.local.remove(key); } catch {}
+  history = [];
+  messagesEl.innerHTML = '';
+}
+
+// Wire header buttons
+if (exportBtn) exportBtn.onclick = () => exportHistory();
+if (clearBtn) clearBtn.onclick = () => clearHistory();

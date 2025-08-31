@@ -59,6 +59,11 @@ async function buildTarget(target) {
     }
     await ensureDir(join(outDir, "icons"));
     await cp(join(ROOT, "icons"), join(outDir, "icons"), { recursive: true });
+    // Include lib/ utilities
+    try {
+      await ensureDir(join(outDir, "lib"));
+      await cp(join(ROOT, "lib"), join(outDir, "lib"), { recursive: true });
+    } catch {}
   } else if (target === "firefox") {
     const outDir = join(ROOT, "dist", "firefox");
     await ensureDir(outDir);
@@ -69,6 +74,11 @@ async function buildTarget(target) {
     }
     await ensureDir(join(outDir, "icons"));
     await cp(join(ROOT, "icons"), join(outDir, "icons"), { recursive: true });
+    // Include lib/ utilities
+    try {
+      await ensureDir(join(outDir, "lib"));
+      await cp(join(ROOT, "lib"), join(outDir, "lib"), { recursive: true });
+    } catch {}
   } else {
     throw new Error(`Unknown target: ${target}`);
   }

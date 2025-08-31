@@ -40,6 +40,9 @@ async function main() {
     assert(await exists(f), `missing file: ${f}`);
   }
 
+  // Utilities folder present
+  assert(await exists("lib"), "missing folder: lib (utility modules)");
+
   // Icons presence
   for (const icon of REQUIRED_ICONS) {
     assert(await exists(icon), `missing icon: ${icon}`);
@@ -71,4 +74,3 @@ main().catch((err) => {
   console.error(err.message || err);
   process.exit(1);
 });
-

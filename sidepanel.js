@@ -110,6 +110,17 @@ document.addEventListener('keydown', (e) => {
 });
 themeToggleBtn.onclick = toggleTheme;
 
+function applyScrollSpeed(setting) {
+  const map = { slow: 120, normal: 220, fast: 400 };
+  SCROLL_SPEED = map[setting] || 220;
+}
+
+// Set compact tooltips for quick actions
+quickBtns.forEach((b) => {
+  const label = b.textContent?.trim() || b.dataset.template || '';
+  if (label) b.title = label;
+});
+
 quickBtns.forEach((b) => b.addEventListener("click", async (e) => {
   e.preventDefault();
   if (isSending) return;
@@ -174,17 +185,52 @@ async function getActiveTabId() {
 }
 
 // Enhanced auto-scroll functionality
-function scrollToBottom(smooth = true) {
-  messagesEl.scrollTo({
-    top: messagesEl.scrollHeight,
-    behavior: 'smooth'
+let stickToBottom = true; // auto-scroll unless user scrolls up
+let scrollAnimating = false;
+let scrollTarget = 0;
+let lastScrollTs = 0;
+let SCROLL_SPEED = 220; // px/sec for readable auto-scroll
+function scrollToBottom() {
+  if (!stickToBottom) return;
+  scrollTarget = Math.max(0, messagesEl.scrollHeight - messagesEl.clientHeight);
+  if (scrollAnimating) return; // animator will pick up new target
+  scrollAnimating = true;
+  lastScrollTs = performance.now();
+  requestAnimationFrame(function step(ts) {
+    if (!stickToBottom) { scrollAnimating = false; return; }
+    const dt = Math.max(0.001, (ts - lastScrollTs) / 1000);
+    lastScrollTs = ts;
+    // Update target in case content grew
+    scrollTarget = Math.max(0, messagesEl.scrollHeight - messagesEl.clientHeight);
+    const current = messagesEl.scrollTop;
+    const delta = scrollTarget - current;
+    if (Math.abs(delta) < 0.5) {
+      messagesEl.scrollTop = scrollTarget;
+      scrollAnimating = false;
+      return;
+    }
+    const step = Math.sign(delta) * Math.min(Math.abs(delta), SCROLL_SPEED * dt);
+    messagesEl.scrollTop = current + step;
+    requestAnimationFrame(step);
   });
 }
 
 function isNearBottom() {
-  const threshold = 100; // pixels from bottom
+  const threshold = 250; // pixels from bottom (more forgiving)
   return messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < threshold;
 }
+
+function handleScroll() {
+  // If user scrolls up beyond threshold, disable sticky; re-enable when near bottom
+  if (isNearBottom()) {
+    stickToBottom = true;
+  } else {
+    // User likely scrolling/reading older messages
+    stickToBottom = false;
+  }
+  if (!stickToBottom) scrollAnimating = false;
+}
+messagesEl.addEventListener('scroll', handleScroll, { passive: true });
 
 function addMessage(role, text) {
   const div = document.createElement("div");
@@ -209,8 +255,8 @@ function addMessage(role, text) {
     div.style.transform = 'translateY(0)';
   }, 50);
   
-  // Auto-scroll to bottom
-  scrollToBottom();
+  // Auto-scroll to bottom unless user has scrolled up
+  if (stickToBottom) scrollToBottom();
   return div;
 }
 
@@ -355,7 +401,7 @@ function scheduleRender(el) {
     });
     renderQueue.clear();
     rafPending = false;
-    if (isNearBottom()) scrollToBottom(false);
+    if (stickToBottom) scrollToBottom();
   });
 }
 
@@ -364,6 +410,9 @@ async function askGemini(question, opts = {}) {
   if (!question) return;
   if (isSending) return;
   setBusy(true, 'Sending…');
+  // Hide welcome card immediately when conversation starts
+  const welcomeEl = document.querySelector('.welcome-message');
+  if (welcomeEl) welcomeEl.style.display = 'none';
   
   const userEl = addMessage("user", question);
   history.push({ role: "user", text: question });
@@ -483,6 +532,9 @@ promptEl.addEventListener('keydown', (e) => {
     if (area === 'sync' && changes.theme) {
       setTheme(changes.theme.newValue);
     }
+    if (area === 'sync' && changes.scrollSpeed) {
+      applyScrollSpeed(changes.scrollSpeed.newValue);
+    }
   });
   
   currentTabId = await getActiveTabId();
@@ -492,6 +544,11 @@ promptEl.addEventListener('keydown', (e) => {
     try { currentOrigin = new URL(snap?.url || '').origin; } catch { currentOrigin = null; }
   } catch { currentOrigin = null; }
   await loadHistory();
+  // Load scroll speed preference
+  try {
+    const { scrollSpeed } = await chrome.storage.sync.get({ scrollSpeed: 'normal' });
+    applyScrollSpeed(scrollSpeed);
+  } catch {}
   
   // Remove the default welcome message since we have a better one in HTML
   const welcomeMessage = document.querySelector('.welcome-message');
@@ -665,6 +722,6 @@ async function clearHistory() {
   messagesEl.innerHTML = '';
 }
 
-// Wire header buttons
+// Wire header buttons directly (simple and clear)
 if (exportBtn) exportBtn.onclick = () => exportHistory();
 if (clearBtn) clearBtn.onclick = () => clearHistory();

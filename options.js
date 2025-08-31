@@ -3,6 +3,7 @@ const apiKeyEl = document.getElementById("apiKey");
 const modelEl = document.getElementById("model");
 const streamEl = document.getElementById("stream");
 const saveBtn = document.getElementById("save");
+const scrollSpeedEl = document.getElementById("scrollSpeed");
 // No theme controls in options; theme follows side panel
 
 let currentTheme = 'system';
@@ -49,21 +50,24 @@ async function initTheme() {
 // No toggle here; options reflects stored theme on load
 
 async function load() {
-  const { geminiApiKey, geminiModel, enableStreaming } = await chrome.storage.sync.get({
+  const { geminiApiKey, geminiModel, enableStreaming, scrollSpeed } = await chrome.storage.sync.get({
     geminiApiKey: "",
     geminiModel: "gemini-2.5-flash-lite",
-    enableStreaming: false
+    enableStreaming: false,
+    scrollSpeed: 'normal'
   });
   apiKeyEl.value = geminiApiKey;
   modelEl.value = geminiModel;
   streamEl.checked = enableStreaming;
+  if (scrollSpeedEl) scrollSpeedEl.value = scrollSpeed;
 }
 
 async function save() {
   await chrome.storage.sync.set({
     geminiApiKey: apiKeyEl.value.trim(),
     geminiModel: modelEl.value.trim(),
-    enableStreaming: streamEl.checked
+    enableStreaming: streamEl.checked,
+    scrollSpeed: scrollSpeedEl ? scrollSpeedEl.value : 'normal'
   });
   
   // Enhanced save feedback

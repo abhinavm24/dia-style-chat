@@ -59,7 +59,7 @@ Core Steps
 
 Checklists
 - [x] Utilities extracted (settings/msg/gemini/context/theme)
-- [ ] Abort + timeout + backoff wired
+- [x] Abort + timeout + backoff wired
 - [ ] Error banners + actions implemented
 - [ ] Non‑stream fallback on SSE failure
 - [ ] Prompt trimming + clamping

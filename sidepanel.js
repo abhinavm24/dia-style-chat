@@ -206,6 +206,67 @@ function addMessage(role, text) {
   return div;
 }
 
+// Simple prompt clamp to avoid excessive payloads
+function clampPrompt(str, max = 4000) {
+  const s = String(str || '').trim();
+  return s.length > max ? s.slice(0, max) : s;
+}
+
+// Error banner with Retry and Settings actions
+function showErrorBanner(message, code, onRetry) {
+  const app = document.getElementById('app') || document.body;
+  // Remove existing banner if present
+  const existing = app.querySelector('.error-banner');
+  if (existing) existing.remove();
+
+  const banner = document.createElement('div');
+  banner.className = 'error-banner';
+  banner.setAttribute('role', 'status');
+  banner.setAttribute('aria-live', 'polite');
+  banner.style.cssText = [
+    'display:flex',
+    'align-items:center',
+    'gap:8px',
+    'position:sticky',
+    'top:0',
+    'z-index:100',
+    'padding:10px 12px',
+    'margin:8px',
+    'border-radius:10px',
+    'background: var(--danger-bg, #fee2e2)',
+    'color: var(--danger-fg, #991b1b)',
+    'border:1px solid var(--danger-br, #fecaca)'
+  ].join(';');
+
+  const text = document.createElement('div');
+  text.style.flex = '1';
+  text.textContent = `⚠️ ${message}`;
+  banner.appendChild(text);
+
+  const retryBtn = document.createElement('button');
+  retryBtn.textContent = 'Retry';
+  retryBtn.className = 'btn-retry';
+  retryBtn.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer;';
+  retryBtn.onclick = () => { banner.remove(); if (typeof onRetry === 'function') onRetry(); };
+  banner.appendChild(retryBtn);
+
+  const settingsBtn = document.createElement('button');
+  settingsBtn.textContent = 'Settings';
+  settingsBtn.className = 'btn-settings';
+  settingsBtn.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer;';
+  settingsBtn.onclick = () => { banner.remove(); openSettingsInPanel(); };
+  // Prefer showing Settings when key/model issues
+  if (code === 'MISSING_KEY' || code === 'BAD_MODEL') {
+    banner.appendChild(settingsBtn);
+  } else {
+    banner.appendChild(settingsBtn);
+  }
+
+  app.prepend(banner);
+  // Auto dismiss after 10s
+  setTimeout(() => { if (banner && banner.parentNode) banner.remove(); }, 10000);
+}
+
 function updateMessage(el, more) {
   el.textContent += more;
   
@@ -273,7 +334,8 @@ function setBusy(busy, placeholderText) {
 }
 
 async function askGemini(question, opts = {}) {
-  if (!question.trim()) return;
+  question = clampPrompt(question);
+  if (!question) return;
   if (isSending) return;
   setBusy(true, 'Sending…');
   
@@ -332,6 +394,8 @@ async function askGemini(question, opts = {}) {
 
     if (res?.error) {
       updateMessage(assistantEl, `⚠️ ${res.error}`);
+      // Offer retry and settings
+      showErrorBanner(res.error, res.code, () => askGemini(question, opts));
       return;
     }
     if (!streamed) {
